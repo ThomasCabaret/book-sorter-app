@@ -1,0 +1,17 @@
+.gradle/
+.gradle-bootstrap/
+.kotlin/
+.idea/
+*.iml
+local.properties
+/build/
+**/build/
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+.DS_Store
+
+# Keep the source hand-off archive beside the working tree without committing it.
+/book-duels-android-v2.tar.gz

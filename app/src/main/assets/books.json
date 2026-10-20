@@ -1,0 +1,1218 @@
+[
+  {
+    "id": "isbn:9782221255728",
+    "title": "Dune, tome 2 : Le Messie de Dune",
+    "author": "Herbert Frank",
+    "isbn13": "9782221255728",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782021139044",
+    "title": "Terminus Radieux",
+    "author": "Volodine Antoine",
+    "isbn13": "9782021139044",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277214212",
+    "title": "Génocides",
+    "author": "Disch Thomas M.",
+    "isbn13": "9782277214212",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782916141671",
+    "title": "L'homme que les arbres aimaient",
+    "author": "Blackwood Algernon",
+    "isbn13": "9782916141671",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253018063",
+    "title": "La montagne morte de la vie",
+    "author": "Bernanos Michel",
+    "isbn13": "9782253018063",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266333313",
+    "title": "Vorrh, tome 2 : Les Ancêtres",
+    "author": "Catling Brian",
+    "isbn13": "9782266333313",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782360841813",
+    "title": "Mordew",
+    "author": "Pheby Alex",
+    "isbn13": "9782360841813",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266307406",
+    "title": "Vorrh, tome 1",
+    "author": "Catling Brian",
+    "isbn13": "9782266307406",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253151432",
+    "title": "Simetierre",
+    "author": "King Stephen",
+    "isbn13": "9782253151432",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290411926",
+    "title": "The Fisherman",
+    "author": "Langan John",
+    "isbn13": "9782290411926",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070400669",
+    "title": "Moby Dick",
+    "author": "Melville Herman",
+    "isbn13": "9782070400669",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253123149",
+    "title": "Les ruines",
+    "author": "Smith Scott",
+    "isbn13": "9782253123149",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290349519",
+    "title": "Le Corps exquis",
+    "author": "Brite Poppy Z.",
+    "isbn13": "9782290349519",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207132388",
+    "title": "Troupe 52",
+    "author": "Davidson Craig",
+    "isbn13": "9782207132388",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782226439932",
+    "title": "Terminus",
+    "author": "Sweterlitsch Tom",
+    "isbn13": "9782226439932",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290436301",
+    "title": "Cadavre exquis",
+    "author": "Bazterrica Agustina",
+    "isbn13": "9782290436301",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843449901",
+    "title": "Sur la route d'Aldébaran",
+    "author": "Tchaikovsky Adrian",
+    "isbn13": "9782843449901",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782226436931",
+    "title": "Les étoiles sont légion",
+    "author": "Hurley Kameron",
+    "isbn13": "9782226436931",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782752901644",
+    "title": "La Trilogie de Gormenghast, tome 2 : Gormenghast",
+    "author": "Peake Mervyn",
+    "isbn13": "9782752901644",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782381631912",
+    "title": "La grande muraille de Mars",
+    "author": "Reynolds Alastair",
+    "isbn13": "9782381631912",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266035804",
+    "title": "Le Bain des limbes, tome 1 : Ne mords pas le soleil",
+    "author": "Lee Tanith",
+    "isbn13": "9782266035804",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070449293",
+    "title": "L'Héritage de saint Leibowitz - Intégrale",
+    "author": "Miller Walter M.",
+    "isbn13": "9782070449293",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782381630595",
+    "title": "Ymir",
+    "author": "Larson Rich",
+    "isbn13": "9782381630595",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9791030701173",
+    "title": "Autorité",
+    "author": "VanderMeer Jeff",
+    "isbn13": "9791030701173",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207303757",
+    "title": "Le livre du nouveau soleil, Tome 4 : La citadelle de l'autarque",
+    "author": "Wolfe Gene",
+    "isbn13": "9782207303757",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207303610",
+    "title": "Le livre du nouveau soleil, Tome 3 : L'épée du licteur",
+    "author": "Wolfe Gene",
+    "isbn13": "9782207303610",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253015864",
+    "title": "Sécheresse",
+    "author": "Ballard James Graham",
+    "isbn13": "9782253015864",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266111201",
+    "title": "Rupture dans le réel, tome 3 : Expansion",
+    "author": "Hamilton Peter F.",
+    "isbn13": "9782266111201",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266111195",
+    "title": "Rupture dans le réel, tome 2 : Emergence",
+    "author": "Hamilton Peter F.",
+    "isbn13": "9782266111195",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266119481",
+    "title": "L'Alchimiste du neutronium, tome 1 : Consolidation",
+    "author": "Hamilton Peter F.",
+    "isbn13": "9782266119481",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253119296",
+    "title": "Le Goût de l'immortalité",
+    "author": "Dufour Catherine",
+    "isbn13": "9782253119296",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221132104",
+    "title": "Zones of Thought, tome 2 : Les enfants du ciel",
+    "author": "Vinge Vernor",
+    "isbn13": "9782221132104",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782846267984",
+    "title": "La Pompe six",
+    "author": "Bacigalupi Paolo",
+    "isbn13": "9782846267984",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070374441",
+    "title": "Malevil",
+    "author": "Merle Robert",
+    "isbn13": "9782070374441",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070406418",
+    "title": "Le Royaume des devins",
+    "author": "Barker Clive",
+    "isbn13": "9782070406418",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290317150",
+    "title": "Le robot qui rêvait",
+    "author": "Asimov Isaac",
+    "isbn13": "9782290317150",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290250105",
+    "title": "Au carrefour des étoiles",
+    "author": "Simak Clifford D.",
+    "isbn13": "9782290250105",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290414439",
+    "title": "Le jour des Triffides",
+    "author": "Wyndham John",
+    "isbn13": "9782290414439",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "babelio:SI81168757195",
+    "title": "Les machines à désir infernales du Dr. Hoffman",
+    "author": "Carter Angela",
+    "isbn13": null,
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070423279",
+    "title": "Le cycle de Viriconium, tome 1 : La cité pastel",
+    "author": "Harrison Michael John",
+    "isbn13": "9782070423279",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "babelio:SIE206057_900",
+    "title": "Les aventures de Jerry Cornelius, tome 1 : Le programme final",
+    "author": "Moorcock Michael",
+    "isbn13": null,
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "babelio:SIE307218_447",
+    "title": "Je n'ai pas de bouche et il faut que je crie",
+    "author": "Ellison Harlan",
+    "isbn13": null,
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290321133",
+    "title": "Jack Barron et l'Eternité",
+    "author": "Spinrad Norman",
+    "isbn13": "9782290321133",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "babelio:SIE244310_399",
+    "title": "Lune fourbe",
+    "author": "Budrys Algis",
+    "isbn13": null,
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253106951",
+    "title": "Piranèse",
+    "author": "Clarke Susanna",
+    "isbn13": "9782253106951",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253183785",
+    "title": "Annihilation",
+    "author": "VanderMeer Jeff",
+    "isbn13": "9782253183785",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266130257",
+    "title": "Rupture dans le réel, tome 1 : Genèse",
+    "author": "Hamilton Peter F.",
+    "isbn13": "9782266130257",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782381960647",
+    "title": "La Maison des feuilles",
+    "author": "Danielewski Mark Z.",
+    "isbn13": "9782381960647",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207246382",
+    "title": "Chroniques martiennes",
+    "author": "Bradbury Ray",
+    "isbn13": "9782207246382",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253151418",
+    "title": "Le Fléau, tome 1",
+    "author": "King Stephen",
+    "isbn13": "9782253151418",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207101278",
+    "title": "Destination ténèbres",
+    "author": "Robinson Frank M.",
+    "isbn13": "9782207101278",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843448744",
+    "title": "Diaspora",
+    "author": "Egan Greg",
+    "isbn13": "9782843448744",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782267050042",
+    "title": "La Trilogie de Gormenghast, tome 1 : Titus d'enfer",
+    "author": "Peake Mervyn",
+    "isbn13": "9782267050042",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253112839",
+    "title": "Jonathan Strange et Mr Norrell",
+    "author": "Clarke Susanna",
+    "isbn13": "9782253112839",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221913291",
+    "title": "Le cycle de Dune - Intégrales 1 et 2",
+    "author": "Herbert Frank",
+    "isbn13": "9782221913291",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843441165",
+    "title": "Cycle des Xeelees, tome 4 : Accrétion",
+    "author": "Baxter Stephen",
+    "isbn13": "9782843441165",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "babelio:978B0B46P7QV7",
+    "title": "Le nom du vent - Intégrale",
+    "author": "Rothfuss Patrick",
+    "isbn13": null,
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782226438881",
+    "title": "Semiosis",
+    "author": "Burke Sue",
+    "isbn13": "9782226438881",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070316434",
+    "title": "La musique du sang",
+    "author": "Bear Greg",
+    "isbn13": "9782070316434",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9791030705065",
+    "title": "Xenogenesis, tome 1 : L'Aube",
+    "author": "Butler Octavia E.",
+    "isbn13": "9791030705065",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070398843",
+    "title": "Le livre du nouveau soleil, tome 1 : L'ombre du bourreau",
+    "author": "Wolfe Gene",
+    "isbn13": "9782070398843",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070421497",
+    "title": "Le Monde inverti",
+    "author": "Priest Christopher",
+    "isbn13": "9782070421497",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782730400305",
+    "title": "Le nuage noir",
+    "author": "Hoyle Fred",
+    "isbn13": "9782730400305",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782352874065",
+    "title": "Frankenstein ou Le Prométhée moderne",
+    "author": "Shelley Mary",
+    "isbn13": "9782352874065",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253072256",
+    "title": "Les Monades urbaines",
+    "author": "Silverberg Robert",
+    "isbn13": "9782253072256",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207260418",
+    "title": "Stalker : Pique-nique au bord du chemin",
+    "author": "Strougatski Arcadi",
+    "isbn13": "9782207260418",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070422395",
+    "title": "Solaris",
+    "author": "Lem Stanislas",
+    "isbn13": "9782070422395",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207500224",
+    "title": "Terminus les étoiles",
+    "author": "Bester Alfred",
+    "isbn13": "9782207500224",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782381631295",
+    "title": "La Maison des soleils",
+    "author": "Reynolds Alastair",
+    "isbn13": "9782381631295",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266022804",
+    "title": "Le Dit de la Terre Plate, Tome 1 : Le maître des ténèbres",
+    "author": "Lee Tanith",
+    "isbn13": "9782266022804",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070309467",
+    "title": "Un cas de conscience",
+    "author": "Blish James",
+    "isbn13": "9782070309467",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266154994",
+    "title": "Les Scarifiés",
+    "author": "Miéville China",
+    "isbn13": "9782266154994",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843449093",
+    "title": "L'homme qui mit fin à l'Histoire",
+    "author": "Liu Ken",
+    "isbn13": "9782843449093",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782366240498",
+    "title": "Neige",
+    "author": "Kavan Anna",
+    "isbn13": "9782366240498",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843449987",
+    "title": "Axiomatique",
+    "author": "Egan Greg",
+    "isbn13": "9782843449987",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266115643",
+    "title": "La Variété Andromède",
+    "author": "Crichton Michael",
+    "isbn13": "9782266115643",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "babelio:978B016ZT0GNA",
+    "title": "Les nettoyeurs, tome 1",
+    "author": "Centaure Julien",
+    "isbn13": null,
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290032664",
+    "title": "La Fille automate",
+    "author": "Bacigalupi Paolo",
+    "isbn13": "9782290032664",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9791028119676",
+    "title": "Projet dernière chance",
+    "author": "Weir Andy",
+    "isbn13": "9791028119676",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266197564",
+    "title": "Vision aveugle, tome 1 : Vision aveugle",
+    "author": "Watts Peter",
+    "isbn13": "9782266197564",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290111345",
+    "title": "Les chroniques du Radch, tome 1 : La justice de l'ancillaire",
+    "author": "Leckie Ann",
+    "isbn13": "9782290111345",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782264043153",
+    "title": "Le dernier homme",
+    "author": "Atwood Margaret",
+    "isbn13": "9782264043153",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266128490",
+    "title": "Mars la Verte",
+    "author": "Robinson Kim Stanley",
+    "isbn13": "9782266128490",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782226435149",
+    "title": "Anatèm, tome 2",
+    "author": "Stephenson Neal",
+    "isbn13": "9782226435149",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253260448",
+    "title": "Anatèm, tome 1",
+    "author": "Stephenson Neal",
+    "isbn13": "9782253260448",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290233153",
+    "title": "Récursion",
+    "author": "Crouch Blake",
+    "isbn13": "9782290233153",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9791036001192",
+    "title": "Un psaume pour les recyclés sauvages",
+    "author": "Chambers Becky",
+    "isbn13": "9791036001192",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277115205",
+    "title": "Le monde vert",
+    "author": "Aldiss Brian Wilson",
+    "isbn13": "9782277115205",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070423316",
+    "title": "Schismatrice +",
+    "author": "Sterling Bruce",
+    "isbn13": "9782070423316",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290311240",
+    "title": "Les plus qu'humains",
+    "author": "Sturgeon Theodore",
+    "isbn13": "9782290311240",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207258040",
+    "title": "Spin, tome 1",
+    "author": "Wilson Robert Charles",
+    "isbn13": "9782207258040",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266239721",
+    "title": "The City & the City",
+    "author": "Miéville China",
+    "isbn13": "9782266239721",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782352946274",
+    "title": "Le Voleur quantique",
+    "author": "Rajaniemi Hannu",
+    "isbn13": "9782352946274",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782757820919",
+    "title": "Le Berceau du chat",
+    "author": "Vonnegut Kurt",
+    "isbn13": "9782757820919",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207303450",
+    "title": "Le livre du nouveau soleil, Tome 2 : La griffe du demi-dieu",
+    "author": "Wolfe Gene",
+    "isbn13": "9782207303450",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253071808",
+    "title": "Tous à Zanzibar",
+    "author": "Brunner John",
+    "isbn13": "9782253071808",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782879295916",
+    "title": "La Route",
+    "author": "McCarthy Cormac",
+    "isbn13": "9782879295916",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782072892950",
+    "title": "Fahrenheit 451",
+    "author": "Bradbury Ray",
+    "isbn13": "9782072892950",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9791025603468",
+    "title": "La Nuit des temps",
+    "author": "Barjavel René",
+    "isbn13": "9791025603468",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070319015",
+    "title": "H2G2, tome 1 : Le Guide du voyageur galactique",
+    "author": "Adams Douglas",
+    "isbn13": "9782070319015",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070343621",
+    "title": "Révolte sur la Lune",
+    "author": "Heinlein Robert A.",
+    "isbn13": "9782070343621",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070415717",
+    "title": "Le Cycle de Fondation : Fondation et Empire",
+    "author": "Asimov Isaac",
+    "isbn13": "9782070415717",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290308202",
+    "title": "Neuromancien",
+    "author": "Gibson William",
+    "isbn13": "9782290308202",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221090268",
+    "title": "Le cycle d'Hypérion, tome 1 : Hypérion",
+    "author": "Simmons Dan",
+    "isbn13": "9782221090268",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221090275",
+    "title": "Le cycle d'Hypérion, tome 2 : La chute d'Hypérion",
+    "author": "Simmons Dan",
+    "isbn13": "9782221090275",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253061199",
+    "title": "Le Fleuve de l'éternité, tome 1 : Le Monde du fleuve",
+    "author": "Farmer  Philip José",
+    "isbn13": "9782253061199",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221255698",
+    "title": "Le Cycle de Hain, tome 4 : La Main gauche de la nuit",
+    "author": "Le Guin Ursula K.",
+    "isbn13": "9782221255698",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290308257",
+    "title": "La guerre éternelle",
+    "author": "Haldeman Joe",
+    "isbn13": "9782290308257",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253139225",
+    "title": "Les Thanatonautes",
+    "author": "Werber Bernard",
+    "isbn13": "9782253139225",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782367629438",
+    "title": "Le problème à trois corps",
+    "author": "Cixin Liu",
+    "isbn13": "9782367629438",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266138345",
+    "title": "Mars la Rouge",
+    "author": "Robinson Kim Stanley",
+    "isbn13": "9782266138345",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266064774",
+    "title": "Les Cantos d'Hypérion, tome 2 : Hypérion 2",
+    "author": "Simmons Dan",
+    "isbn13": "9782266064774",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266172493",
+    "title": "Les Cantos d'Hypérion, tome 3 : La chute d'Hypérion 1",
+    "author": "Simmons Dan",
+    "isbn13": "9782266172493",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221252338",
+    "title": "Dune, tome 5 : Les Hérétiques de Dune",
+    "author": "Herbert Frank",
+    "isbn13": "9782221252338",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266152938",
+    "title": "Les Cantos d'Hypérion, tome 4 : La chute d'Hypérion II",
+    "author": "Simmons Dan",
+    "isbn13": "9782266152938",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070416462",
+    "title": "Le Cycle de Fondation : Fondation foudroyée",
+    "author": "Asimov Isaac",
+    "isbn13": "9782070416462",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277217688",
+    "title": "Blade Runner (Les androïdes rêvent-ils de moutons électriques ?)",
+    "author": "Dick Philip K.",
+    "isbn13": "9782277217688",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782264028815",
+    "title": "Ubik",
+    "author": "Dick Philip K.",
+    "isbn13": "9782264028815",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070396405",
+    "title": "Le Cycle de Fondation - Coffret : Tomes 1 à 5",
+    "author": "Asimov Isaac",
+    "isbn13": "9782070396405",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290312957",
+    "title": "Des fleurs pour Algernon",
+    "author": "Keyes Daniel",
+    "isbn13": "9782290312957",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253005018",
+    "title": "Le Meilleur des Mondes",
+    "author": "Huxley Aldous",
+    "isbn13": "9782253005018",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070408504",
+    "title": "Le Petit Prince",
+    "author": "Saint-Exupéry Antoine de",
+    "isbn13": "9782070408504",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070368228",
+    "title": "1984",
+    "author": "Orwell George",
+    "isbn13": "9782070368228",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253049319",
+    "title": "L'Oeuf du dragon",
+    "author": "Forward Robert L.",
+    "isbn13": "9782253049319",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253072089",
+    "title": "Zones of Thought, tome 1 : Un feu sur l'abîme",
+    "author": "Vinge Vernor",
+    "isbn13": "9782253072089",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782207136829",
+    "title": "Expiration",
+    "author": "Chiang Ted",
+    "isbn13": "9782207136829",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277210474",
+    "title": "Rama, tome 1 : Rendez-vous avec Rama",
+    "author": "Clarke Arthur C.",
+    "isbn13": "9782277210474",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266165402",
+    "title": "Perdido Street Station, tome 1",
+    "author": "Miéville China",
+    "isbn13": "9782266165402",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782072853296",
+    "title": "Dans la toile du temps",
+    "author": "Tchaikovsky Adrian",
+    "isbn13": "9782072853296",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070342266",
+    "title": "La Horde du Contrevent",
+    "author": "Damasio Alain",
+    "isbn13": "9782070342266",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782221252055",
+    "title": "Dune, tome 1",
+    "author": "Herbert Frank",
+    "isbn13": "9782221252055",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277237617",
+    "title": "Le Grand Livre",
+    "author": "Willis Connie",
+    "isbn13": "9782277237617",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782366298444",
+    "title": "Le Moineau de dieu",
+    "author": "Russell Mary Doria",
+    "isbn13": "9782366298444",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277117216",
+    "title": "Cycle de Tschai, tome 1 : Le Chasch",
+    "author": "Vance Jack",
+    "isbn13": "9782277117216",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277211273",
+    "title": "Babel 17",
+    "author": "Delany Samuel R.",
+    "isbn13": "9782277211273",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843441332",
+    "title": "La Ménagerie de papier",
+    "author": "Liu Ken",
+    "isbn13": "9782843441332",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070366149",
+    "title": "Fictions",
+    "author": "Borges Jorge Luis",
+    "isbn13": "9782070366149",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782841723560",
+    "title": "Le Vieil Homme et la guerre",
+    "author": "Scalzi John",
+    "isbn13": "9782841723560",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290308288",
+    "title": "Le Cycle d'Ender, tome 1 : La Stratégie Ender",
+    "author": "Card Orson Scott",
+    "isbn13": "9782290308288",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782253071853",
+    "title": "L'homme des jeux",
+    "author": "Banks Iain M.",
+    "isbn13": "9782253071853",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277222613",
+    "title": "Le Facteur",
+    "author": "Brin David",
+    "isbn13": "9782277222613",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782843441134",
+    "title": "Tau Zéro",
+    "author": "Anderson Poul",
+    "isbn13": "9782843441134",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266181150",
+    "title": "La Paille dans l'Oeil de Dieu (La Poussière dans l'oeil de Dieu )",
+    "author": "Niven Larry",
+    "isbn13": "9782266181150",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782290319055",
+    "title": "Les Montagnes hallucinées",
+    "author": "Lovecraft Howard Phillips",
+    "isbn13": "9782290319055",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070398416",
+    "title": "Le monde englouti",
+    "author": "Ballard James Graham",
+    "isbn13": "9782070398416",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070514397",
+    "title": "La Machine à explorer le temps",
+    "author": "Wells H.G.",
+    "isbn13": "9782070514397",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277217558",
+    "title": "La mort en direct (L'incurable)",
+    "author": "Compton David Guy",
+    "isbn13": "9782277217558",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782277216919",
+    "title": "La Grande Porte, tome 1 : La grande porte",
+    "author": "Pohl Frederik",
+    "isbn13": "9782277216919",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266269278",
+    "title": "Légationville",
+    "author": "Miéville China",
+    "isbn13": "9782266269278",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9791028109257",
+    "title": "Nous sommes Bob, tome 1 : Nous sommes Légion",
+    "author": "Taylor Dennis E.",
+    "isbn13": "9791028109257",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070417674",
+    "title": "Un cantique pour Leibowitz",
+    "author": "Miller Walter M.",
+    "isbn13": "9782070417674",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782211205825",
+    "title": "Le Passeur",
+    "author": "Lowry Lois",
+    "isbn13": "9782211205825",
+    "coverUrl": null,
+    "enabled": true
+  }
+]
