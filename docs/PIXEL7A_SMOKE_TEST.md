@@ -1,5 +1,9 @@
 # Pixel 7a smoke test — 2026-10-20
 
+> The completed observations below concern v0.4. Version 0.5 is locally built
+> and tested, but its card-level set-aside control, restored-book list, and
+> v2-to-v3 in-place migration remain to be checked on the connected phone.
+
 ## Environment
 
 - Device: Google Pixel 7a (`lynx`)

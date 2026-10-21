@@ -60,4 +60,17 @@ class DuelEngineTest {
         assertTrue(state.history.single().active)
         assertEquals(3, state.lastSequence)
     }
+
+    @Test fun setAsideBookAndItsHistoricalDuelsAreExcludedUntilReenabled() {
+        val historicalVotes = listOf(vote(1, "a", "c", "c"), vote(2, "a", "b", "a"))
+        val setAside = books.map { if (it.id == "c") it.copy(enabled = false) else it }
+
+        val withoutC = DuelEngine.analyze(setAside, historicalVotes, 2)
+        assertEquals(listOf("a", "b"), withoutC.books.map { it.book.id })
+        assertEquals(1, withoutC.votes)
+
+        val restored = DuelEngine.analyze(books, historicalVotes, 2)
+        assertEquals(3, restored.books.size)
+        assertEquals(2, restored.votes)
+    }
 }

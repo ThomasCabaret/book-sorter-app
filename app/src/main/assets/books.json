@@ -1,7 +1,7 @@
 [
   {
     "id": "isbn:9782221255728",
-    "title": "Dune, tome 2 : Le Messie de Dune",
+    "title": "Le Messie de Dune",
     "author": "Herbert Frank",
     "isbn13": "9782221255728",
     "coverUrl": null,
@@ -437,7 +437,7 @@
     "author": "Herbert Frank",
     "isbn13": "9782221913291",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782843441165",
@@ -809,7 +809,7 @@
   },
   {
     "id": "isbn:9782070415717",
-    "title": "Le Cycle de Fondation : Fondation et Empire",
+    "title": "Fondation et Empire",
     "author": "Asimov Isaac",
     "isbn13": "9782070415717",
     "coverUrl": null,
@@ -825,7 +825,7 @@
   },
   {
     "id": "isbn:9782221090268",
-    "title": "Le cycle d'Hypérion, tome 1 : Hypérion",
+    "title": "Hypérion",
     "author": "Simmons Dan",
     "isbn13": "9782221090268",
     "coverUrl": null,
@@ -833,7 +833,7 @@
   },
   {
     "id": "isbn:9782221090275",
-    "title": "Le cycle d'Hypérion, tome 2 : La chute d'Hypérion",
+    "title": "La Chute d’Hypérion",
     "author": "Simmons Dan",
     "isbn13": "9782221090275",
     "coverUrl": null,
@@ -893,7 +893,7 @@
     "author": "Simmons Dan",
     "isbn13": "9782266064774",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782266172493",
@@ -901,7 +901,7 @@
     "author": "Simmons Dan",
     "isbn13": "9782266172493",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782221252338",
@@ -909,7 +909,7 @@
     "author": "Herbert Frank",
     "isbn13": "9782221252338",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782266152938",
@@ -917,7 +917,7 @@
     "author": "Simmons Dan",
     "isbn13": "9782266152938",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782070416462",
@@ -925,7 +925,7 @@
     "author": "Asimov Isaac",
     "isbn13": "9782070416462",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782277217688",
@@ -949,7 +949,7 @@
     "author": "Asimov Isaac",
     "isbn13": "9782070396405",
     "coverUrl": null,
-    "enabled": true
+    "enabled": false
   },
   {
     "id": "isbn:9782290312957",
@@ -1041,7 +1041,7 @@
   },
   {
     "id": "isbn:9782221252055",
-    "title": "Dune, tome 1",
+    "title": "Dune",
     "author": "Herbert Frank",
     "isbn13": "9782221252055",
     "coverUrl": null,
@@ -1212,6 +1212,30 @@
     "title": "Le Passeur",
     "author": "Lowry Lois",
     "isbn13": "9782211205825",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782070415700",
+    "title": "Fondation",
+    "author": "Asimov Isaac",
+    "isbn13": "9782070415700",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266267939",
+    "title": "Endymion",
+    "author": "Simmons Dan",
+    "isbn13": "9782266267939",
+    "coverUrl": null,
+    "enabled": true
+  },
+  {
+    "id": "isbn:9782266271318",
+    "title": "L’Éveil d’Endymion",
+    "author": "Simmons Dan",
+    "isbn13": "9782266271318",
     "coverUrl": null,
     "enabled": true
   }

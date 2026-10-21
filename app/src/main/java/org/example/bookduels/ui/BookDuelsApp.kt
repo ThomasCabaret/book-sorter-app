@@ -105,7 +105,7 @@ internal fun BookDuelsApp(
             when {
                 state.loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                 state.error != null -> Text("Erreur de catalogue : ${state.error}", Modifier.padding(24.dp))
-                tab == Tab.DUELS -> DuelScreen(state, onDuelAction, onUndoLatestDecision)
+                tab == Tab.DUELS -> DuelScreen(state, onDuelAction, onUndoLatestDecision, onToggleBook)
                 tab == Tab.RANKING -> RankingScreen(state.report!!)
                 tab == Tab.LIBRARY -> LibraryScreen(state, onImportCsv, onAddBook, onToggleBook)
                 tab == Tab.HISTORY -> HistoryScreen(state, onProtectedAction, onExport)
@@ -119,6 +119,7 @@ private fun DuelScreen(
     state: AppUiState,
     onDuelAction: (Duel, String?) -> Unit,
     onUndoLatestDecision: () -> Unit,
+    onToggleBook: (String, Boolean) -> Unit,
 ) {
     val report = state.report ?: return
     val duel = report.duel
@@ -152,6 +153,7 @@ private fun DuelScreen(
                 selected = state.selectionFeedback?.chosenBookId == duel.first.id,
                 modifier = Modifier.weight(1f),
                 onChosen = { onDuelAction(duel, duel.first.id) },
+                onPutAside = { onToggleBook(duel.first.id, false) },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 HorizontalDivider(Modifier.weight(1f))
@@ -169,6 +171,7 @@ private fun DuelScreen(
                 selected = state.selectionFeedback?.chosenBookId == duel.second.id,
                 modifier = Modifier.weight(1f),
                 onChosen = { onDuelAction(duel, duel.second.id) },
+                onPutAside = { onToggleBook(duel.second.id, false) },
             )
         }
     }
@@ -182,6 +185,7 @@ private fun DuelCard(
     selected: Boolean,
     modifier: Modifier,
     onChosen: () -> Unit,
+    onPutAside: () -> Unit,
 ) {
     var horizontalDrag by remember(book.id, revision) { mutableFloatStateOf(0f) }
     val thresholdPx = with(LocalDensity.current) { 90.dp.toPx() }
@@ -244,6 +248,10 @@ private fun DuelCard(
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(book.author, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onPutAside, enabled = enabled) {
+                        Text("Mettre de côté")
+                    }
                     if (selected) {
                         Spacer(Modifier.height(10.dp))
                         Text(

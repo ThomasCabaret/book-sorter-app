@@ -60,7 +60,10 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
     init {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) { store.mergeBundled(BookCatalog.loadBundled(application)) }
+                withContext(Dispatchers.IO) {
+                    store.mergeBundled(BookCatalog.loadBundled(application))
+                    store.applySagaCatalogCurationV1()
+                }
                 refresh()
             } catch (e: Exception) {
                 state.value = state.value.copy(loading = false, error = e.message ?: "Catalog error")
@@ -170,9 +173,12 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
         importSummary(store.addManually(title, author, isbn13))
     }
 
-    fun setEnabled(id: String, enabled: Boolean) = performOperation {
-        store.setEnabled(id, enabled)
-        if (enabled) "Livre réactivé" else "Livre masqué des prochains duels (historique conservé)"
+    fun setEnabled(id: String, enabled: Boolean) {
+        recentDecisions.clear()
+        performOperation {
+            store.setEnabled(id, enabled)
+            if (enabled) "Livre réintégré au classement" else "Livre mis de côté (duels conservés)"
+        }
     }
 
     fun exportBundle(uri: Uri) = performOperation {

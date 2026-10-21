@@ -1,24 +1,27 @@
-# BookDuels v0.4 — Offline-first Android app (Pixel 7a)
+# BookDuels v0.5 — Offline-first Android app (Pixel 7a)
 
 An Android app for a single reader. Compare any two read books with an
 independent horizontal swipe on either the upper or lower book card. The card
 swiped left **or** right is the preferred book. A separate Joker action means
 "decline to choose" and does not introduce a tie or a preference vote.
 
-This is a **source project**, not a release APK. The JVM unit tests, Python
-exchange tests, debug APK build, lint, and Pixel 7a smoke tests pass with
-Android SDK/API 37. CSV import and v1-to-v2 migration still need dedicated
-device tests.
+This is a **source project**, not a release APK. The v0.5 JVM tests, Python
+exchange tests, debug APK build, and lint pass with Android SDK/API 37. The
+preceding v0.4 build passed a Pixel 7a smoke test; this v0.5 set-aside flow and
+database migration still need their on-device upgrade check.
 
 ## Features
 
 - A persistent, editable on-device SQLite book catalog seeded from
   `app/src/main/assets/books.json` at first launch.
-- **152 read books** from the supplied Babelio export bundled as initial data;
+- **152 read-book rows** from the supplied Babelio export bundled as initial data;
   57 "A lire" and 12 "En cours" entries omitted. **Every Babelio rating is ignored.**
-- All 152 book references preserved: **146 valid ISBN-13** and **6 opaque
+- All 152 original references are preserved: **146 valid ISBN-13** and **6 opaque
   alphanumeric Babelio references**. Opaque references are not passed to the
   Open Library ISBN Covers API.
+- The curated catalog retains 155 records: three missing whole novels were
+  added and seven redundant split-volume, omnibus, or unread saga entries start
+  **set aside**. This yields 148 active works without erasing any original row.
 - Import another Babelio CSV from the Android file picker. Supports UTF-8,
   Windows-1252/ISO-8859-1, semicolon separators, escaped double quotes and
   `Statut=Lu` filtering. Other statuses are ignored; they never disable books.
@@ -26,7 +29,8 @@ device tests.
   external reference is matched first; an exact normalized title **and** author
   pair is a conservative fallback. Unclear multi-matches are skipped.
 - Add a read book manually, with optional valid ISBN-13. Search the catalog,
-  enable/disable books without changing vote history.
+  put books aside and restore them without changing vote history. The duel
+  cards expose the same quick set-aside action.
 - Ranked Pairs (Tideman) over observed majority edges with a regularized
   Bradley-Terry estimate for unconstrained ranking and pair acquisition.
   Repeated jokers reduce a pair's chance of appearing. Metrics are heuristics,
@@ -104,7 +108,7 @@ options and USB debugging, connect the unlocked phone, accept its RSA
 fingerprint prompt, then run the PowerShell commands above. Before treating the
 build as release-ready, complete the remaining interaction checks:
 
-1. The first launch seeds 152 books and a relaunch preserves votes.
+1. The first launch seeds 155 retained records (148 active) and a relaunch preserves votes.
 2. Both card swipes and both explicit choice buttons commit exactly one choice,
    show the 250 ms selection flash, and advance immediately. Verify that the
    bounded three-choice undo stack unwinds in strict reverse order.
@@ -112,20 +116,23 @@ build as release-ready, complete the remaining interaction checks:
    stays bounded while many different books are shown.
 4. A Windows-1252 Babelio CSV import is previewed/applied atomically; unread
    rows and ratings do not affect the catalog or ranking.
-5. Disabling and re-enabling a book changes current duels without deleting its
-   history.
+5. Putting a book aside from either a duel card or the library removes it and
+   its pairwise results from the current ranking; restoring it brings those
+   preserved duels back.
 6. Neutralize/reinstate actions fail closed without secure authentication and
    succeed only after a fresh Pixel credential/strong-biometric prompt.
 7. The exported tarball passes `scripts/inspect_bundle.py` on the PC.
-8. Installing a later debug build with `adb install -r` preserves the database;
-   explicitly test the v1-to-v2 migration with a retained v1 fixture before a
-   release build.
+8. Installing this debug build with `adb install -r` preserves the database and
+   applies the one-time saga curation; explicitly test direct v1-to-v3 and
+   v2-to-v3 migration with retained fixtures before a release build.
 
-On first launch the SQLite catalog gets seeded with the 152 read books. It is
+On first launch the SQLite catalog gets seeded with 155 retained records: the
+152 original Babelio rows plus three explicitly curated whole novels. It is
 thereafter the source of truth. New versions of the APK can add new entries to
 the seed catalog; the startup merge **never replaces existing books, resets
-visibility choices, or modifies event rows**. Re-importing the exact original
-CSV reports 0 new books (as expected).
+visibility choices, or modifies event rows**. A separate one-time v0.5 curation
+implements the requested saga corrections without changing any event. Re-importing
+the exact original CSV reports 0 new books (as expected).
 
 ## Android UI
 
@@ -133,13 +140,16 @@ CSV reports 0 new books (as expected).
   or press its explicit button. The chosen card is highlighted and labelled
   for 250 ms before the next duel appears. **Annuler** unwinds up to the last
   three choices made in the current app session and reopens the relevant duel.
-  Joker follows the same fast flow. No decision is saved for just opening a duel.
+  Joker follows the same fast flow. **Mettre de côté** removes either displayed
+  book from upcoming duels and the ranking without deleting its history. No
+  decision is saved for just opening a duel.
 - **Classement**: provisional Ranked Pairs order, total votes, jokers,
   comparison coverage, graph components, skipped cyclic edges, uncertain
   Bradley-Terry proxy; a strict direct Condorcet winner is shown only when
   supported by direct head-to-head results against every other active book.
-- **Livres**: import Babelio CSV, add books, filter and enable/disable. Disabling
-  a book removes it from current pair selection/ranking, **not from history**.
+- **Livres**: import Babelio CSV, add books, search, and switch among **Actifs**,
+  **Mis de côté**, and **Tous**. Putting a book aside removes it from current
+  pair selection/ranking, **not from history**; it can be restored at any time.
 - **Historique**: chronological user decisions, neutralize an active suffix,
   reinstate the most recent batch; export a complete portable `.tar.gz`.
 
@@ -168,6 +178,19 @@ represents a *work* rather than a particular edition. It is never reassigned.
 - An item not present in a newer CSV is **kept**. An item with `A lire` or
   `En cours` in a newly imported CSV is **ignored**, never un-read/disabled.
 - The manual add feature follows the same deduplication rules.
+
+### Explicit saga curation (v0.5)
+
+The one-time catalog curation keeps exactly the requested whole works active:
+
+- Dune: `Dune`, `Le Messie de Dune`;
+- Hyperion: `Hypérion`, `La Chute d’Hypérion`, `Endymion`,
+  `L’Éveil d’Endymion`;
+- Foundation: `Fondation`, `Fondation et Empire`.
+
+Seven pre-existing box-set, split-pocket, or unread entries are retained with
+their stable IDs but start set aside. Existing votes involving them stay in the
+append-only log and are ignored only while that book remains set aside.
 
 **Known limitation:** different editions with significantly different titles or
 author formatting can remain distinct works unless manually reconciled in a
@@ -226,11 +249,15 @@ history revision and that the target is still the newest active base event,
 then appends one `INVALIDATE`. Arbitrary/older history edits and reinstatement
 remain behind the protected confirmation flow above.
 
-**V1 database migration:** schema v1 -> v2 preserves every event row and
-creates the new catalog tables. V1 book metadata was stored only in APK
-assets, so event references not present in the V2 seed are preserved as
+**Database migration:** direct schema v1 -> v3 preserves every event row and
+creates the catalog and curation-marker tables; v2 -> v3 only adds that marker
+table. V1 book metadata was stored only in APK assets, so unresolved event
+references are preserved as
 **disabled legacy placeholders**, not silently remapped or discarded. The
 placeholders cannot automatically be resolved to a new work without evidence.
+After the ordinary non-overwriting seed merge, the requested saga curation is
+applied transactionally once; it changes titles/visibility only and never event
+rows.
 
 **Limits:** uninstalling the app or clearing Android app storage can still
 destroy local data, and a rooted/compromised device is outside the protection
@@ -262,7 +289,7 @@ Keys omitted from a row represent `null`. A desktop application must **replay
 the event log** rather than naively counting every historical `VOTE` row.
 Original Babelio ratings are **not included**.
 
-A standalone **example export** containing the initial 152 books and **zero
+A standalone **example export** containing the curated 155 records and **zero
 votes** is included at `samples/initial-catalog-example.tar.gz`. It is not a
 backup of the user's future votes.
 
@@ -281,21 +308,21 @@ The hash checks detect corruption/unsanctioned changes but are **not an
 authenticating digital signature**: a malicious party could recreate the
 manifest. Treat user-supplied archives as untrusted.
 
-There is **no Android archive restore** in V2. A future restore must validate
+There is **no Android archive restore** in V3. A future restore must validate
 everything, explicitly preview effects, require fresh secure-device auth,
 and never silently replace vote history or reuse book IDs.
 
 ## Project layout
 
 ```text
-app/src/main/assets/books.json           Initial 152 read books; no star ratings
+app/src/main/assets/books.json           155 retained catalog records; no star ratings
 app/src/main/java/org/example/bookduels/
   core/Book.kt                            Work/duel/event models and replay
   core/BabelioCsv.kt                      CSV parser and reference classification
   core/TarGzipWriter.kt                   Pure Kotlin USTAR/GZIP writer
   core/DuelEngine.kt                      Ranked Pairs, BT scores, acquisition
   data/BookCatalog.kt                     Seed parsing
-  data/EventStore.kt                      SQLite 2 schema, merging, event log
+  data/EventStore.kt                      SQLite 3 schema, merging, curation, event log
   data/PortableArchive.kt                 Export schema and checksums
   ui/MainActivity.kt                      SAF pickers and biometric prompt
   ui/MainViewModel.kt                     Serialized writes and UI state

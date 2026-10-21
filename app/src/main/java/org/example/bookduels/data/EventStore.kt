@@ -30,7 +30,7 @@ data class CatalogRecord(
 data class ArchiveSnapshot(val catalog: List<CatalogRecord>, val events: List<VoteEvent>)
 
 /** No UPDATE or DELETE is ever permitted on the events table. */
-class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", null, 2) {
+class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", null, 3) {
     init { setWriteAheadLoggingEnabled(true) }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -41,13 +41,20 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
     override fun onCreate(db: SQLiteDatabase) {
         createEventTable(db)
         createCatalogTables(db)
+        createAppMetadataTable(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        require(oldVersion in 1..2 && newVersion == 3) {
+            "Manual nondestructive migration required: $oldVersion -> $newVersion"
+        }
         // V1 -> V2 only ADDS catalog tables; all event sequences and payloads survive.
-        require(oldVersion == 1 && newVersion == 2) { "Manual nondestructive migration required: $oldVersion -> $newVersion" }
-        createCatalogTables(db)
-        preserveUnknownV1BookIds(db)
+        if (oldVersion < 2) {
+            createCatalogTables(db)
+            preserveUnknownV1BookIds(db)
+        }
+        // V3 adds only a marker table for one-time, explicit catalog curations.
+        createAppMetadataTable(db)
     }
 
     /** V1 had asset-only books: preserve references even if metadata was never stored. */
@@ -118,6 +125,15 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
         db.execSQL("CREATE INDEX idx_book_refs_book ON book_external_refs(book_id)")
     }
 
+    private fun createAppMetadataTable(db: SQLiteDatabase) {
+        db.execSQL(
+            """CREATE TABLE app_metadata (
+                key TEXT PRIMARY KEY NOT NULL,
+                value TEXT NOT NULL
+            )""".trimIndent()
+        )
+    }
+
     fun allBooks(): List<Book> = readBooks(readableDatabase).map { it.book }
 
     private fun readBooks(db: SQLiteDatabase): List<CatalogRecord> {
@@ -146,7 +162,7 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
     /** On every launch, add only missing bundled entries; NEVER overwrite user edits or vote history. */
     fun mergeBundled(books: List<Book>): CatalogImportResult = mergeBooks(
         books.map { IncomingBook(it.title, it.author, it.isbn13,
-            it.id.takeIf { id -> id.startsWith("babelio:") }, it.id, it.coverUrl) }, "BUNDLED", 0
+            it.id.takeIf { id -> id.startsWith("babelio:") }, it.id, it.coverUrl, it.enabled) }, "BUNDLED", 0
     )
 
     fun importBabelio(rows: List<ImportedBook>, skippedUnread: Int): CatalogImportResult = mergeBooks(
@@ -166,6 +182,7 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
         val externalRef: String? = null,
         val preferredId: String? = null,
         val coverUrl: String? = null,
+        val enabled: Boolean = true,
     )
 
     private fun mergeBooks(rows: List<IncomingBook>, origin: String, skippedUnread: Int): CatalogImportResult {
@@ -236,11 +253,12 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
                 val id = row.preferredId ?: row.isbn?.let { "isbn:$it" } ?: row.externalRef ?: "manual:${UUID.randomUUID()}"
                 // An ID collision with different metadata must NEVER recycle that ID.
                 require(id !in byId) { "Book ID collision: $id" }
-                val book = Book(id, row.title, row.author, row.isbn, row.coverUrl, true)
+                val book = Book(id, row.title, row.author, row.isbn, row.coverUrl, row.enabled)
                 db.insertOrThrow("books", null, ContentValues().apply {
                     put("book_id", book.id); put("title", book.title); put("author", book.author)
                     put("isbn13", book.isbn13); put("cover_url", book.coverUrl)
-                    put("enabled", 1); put("source", origin); put("created_at_ms", System.currentTimeMillis())
+                    put("enabled", if (book.enabled) 1 else 0)
+                    put("source", origin); put("created_at_ms", System.currentTimeMillis())
                 })
                 if (row.isbn != null) {
                     db.insertOrThrow("book_isbns", null, ContentValues().apply {
@@ -263,11 +281,77 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
         } finally { db.endTransaction() }
     }
 
+    /**
+     * Applies the user's explicit saga reconciliation once, after the bundled
+     * catalog has been merged. Stable IDs and every event row are preserved.
+     */
+    fun applySagaCatalogCurationV1() {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            val alreadyApplied = db.rawQuery(
+                "SELECT 1 FROM app_metadata WHERE key=?", arrayOf(SAGA_CURATION_V1)
+            ).use { it.moveToFirst() }
+            if (alreadyApplied) {
+                db.setTransactionSuccessful()
+                return
+            }
+
+            val canonicalTitles = mapOf(
+                "isbn:9782221252055" to "Dune",
+                "isbn:9782221255728" to "Le Messie de Dune",
+                "isbn:9782221090268" to "Hypérion",
+                "isbn:9782221090275" to "La Chute d’Hypérion",
+                "isbn:9782070415717" to "Fondation et Empire",
+            )
+            canonicalTitles.forEach { (id, title) ->
+                val updated = db.update("books", ContentValues().apply {
+                    put("title", title)
+                    put("enabled", 1)
+                }, "book_id=? AND source<>?", arrayOf(id, "V1_PLACEHOLDER"))
+                // Unknown V1 IDs remain disabled placeholders until a future,
+                // evidence-backed merge flow; this curation never remaps them.
+                if (updated == 0) {
+                    val isPlaceholder = db.rawQuery(
+                        "SELECT 1 FROM books WHERE book_id=? AND source=?",
+                        arrayOf(id, "V1_PLACEHOLDER"),
+                    ).use { it.moveToFirst() }
+                    require(isPlaceholder) { "Missing canonical saga book: $id" }
+                }
+            }
+
+            val setAsideIds = listOf(
+                "isbn:9782221913291", // Dune 1+2 omnibus
+                "isbn:9782221252338", // unread Dune novel
+                "isbn:9782266064774", // split Hypérion volume
+                "isbn:9782266172493", // split La Chute d'Hypérion volume 1
+                "isbn:9782266152938", // split La Chute d'Hypérion volume 2
+                "isbn:9782070396405", // Foundation five-book box
+                "isbn:9782070416462", // unread Foundation novel
+            )
+            setAsideIds.forEach { id ->
+                val updated = db.update("books", ContentValues().apply { put("enabled", 0) },
+                    "book_id=?", arrayOf(id))
+                require(updated == 1) { "Missing redundant saga entry: $id" }
+            }
+
+            db.insertOrThrow("app_metadata", null, ContentValues().apply {
+                put("key", SAGA_CURATION_V1)
+                put("value", System.currentTimeMillis().toString())
+            })
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+    }
+
     /** Hiding a book does not modify any historical event. */
     fun setEnabled(id: String, enabled: Boolean) {
         val updated = writableDatabase.update("books", ContentValues().apply { put("enabled", if (enabled) 1 else 0) },
             "book_id=?", arrayOf(id))
         require(updated == 1) { "Book no longer exists" }
+    }
+
+    private companion object {
+        const val SAGA_CURATION_V1 = "saga_catalog_curation_v1"
     }
 
     fun events(): List<VoteEvent> = readEvents(readableDatabase)

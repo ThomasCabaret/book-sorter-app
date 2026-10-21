@@ -1,4 +1,4 @@
-# BookDuels v0.4 — instructions for coding agents
+# BookDuels v0.5 — instructions for coding agents
 
 ## Core objective
 
@@ -41,9 +41,11 @@ ranking/duels, not from the durable event log.
   UTF-8 is also allowed.
 - Import **only** rows with normalized `Statut == "lu"`; discard all ratings.
   Never convert star ratings into duels, seed ranking, or export them.
-- 152 initial read books: 146 genuinely valid ISBN-13, SIX alphanumeric
+- 152 initial Babelio rows: 146 genuinely valid ISBN-13, SIX alphanumeric
   export references masquerading as ISBN. These are stored as namespaced
   `babelio:...` identifiers. NEVER pass them to an ISBN covers API.
+- The curated seed retains 155 records: three missing whole works were added;
+  seven redundant split/omnibus/unread saga entries start disabled.
 - Prefer exact ISBN/opaque external reference matching; conservative normalized
   title AND author only when unique; otherwise skip as ambiguous. Different
   edition identifiers are aliases for one work where supported by evidence.
@@ -54,7 +56,7 @@ ranking/duels, not from the durable event log.
 - Device history stored in local SQLite; UI in French, code/docs/identifiers in
   English; avoid analytics, accounts, background bulk scraping, or cloud sync.
 - Covers from Open Library Covers endpoint **on demand** with Coil caching; do
-  not preload all 152 covers or scrape Babelio/Goodreads HTML.
+  not preload the catalog or scrape Babelio/Goodreads HTML.
 - Android export uses a real USTAR/GZIP file with manifest SHA-256 checks,
   `catalog.json`, complete `events.jsonl` and `README.txt`.
 - `scripts/inspect_bundle.py` validates bytes and event-reference semantics
@@ -78,13 +80,13 @@ ranking/duels, not from the durable event log.
 - `./scripts/test-archive.sh` produces tar.gz in Kotlin and opens in Python.
 - `python3 scripts/test_bundle.py` checks good and tampered desktop archives.
 - `python3 scripts/inspect_bundle.py samples/initial-catalog-example.tar.gz`
-  verifies the shipped 152-book/zero-event example.
+  verifies the shipped 155-book/zero-event example.
 - `./gradlew :app:assembleDebug`, JVM unit tests, and an initial Pixel 7a
   Android 17/API 37 install/start/navigation/export smoke test are verified.
-- Before release: instrumentation for SQLite v1->v2 migration, SAF encoding,
+- Before release: instrumentation for SQLite v1->v3 and v2->v3 migrations, SAF encoding,
   Compose swipe semantics, biometric fail-closed and Pixel 7a install/upgrade.
 
-## V2 known omissions
+## V3 known omissions
 
 - No secure Android import/restore of portable tarballs.
 - No manual metadata/ISBN/cover URL edit, explicit work merge, or bulk cover
