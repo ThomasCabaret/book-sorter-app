@@ -200,6 +200,30 @@ prediction; reader factors preserve a path for an explicit nearest-profile
 hybrid, but that second scoring layer must itself be evaluated before being
 claimed better or shipped. On-device integration is still pending.
 
+### Personal inference from a verified export
+
+`scripts/recommend_latent.py` validates a portable BookDuels archive, resolves
+its works with the same conservative aliases, and fits only the small personal
+vector. Only active votes whose two books are active and unambiguously matched
+are used. Jokers are ignored rather than treated as ties. Every matched catalog
+work, including a disabled one, is excluded from candidates so that a known
+edition is not recommended back to the reader.
+
+```powershell
+python scripts\recommend_latent.py C:\path\to\bookduels-export.tar.gz `
+  --model data\goodbooks-10k\models\pairwise-48d.npz `
+  --books data\goodbooks-10k\books.csv `
+  --work-aliases data\goodbooks-10k\work_aliases.csv `
+  --tags data\goodbooks-10k\tags.csv `
+  --book-tags data\goodbooks-10k\book_tags.csv `
+  --output recommendations-latent.json
+```
+
+The output includes predicted books and an optional nearest-reader diagnostic.
+The latter is deliberately not used to score recommendations: cosine-neighbor
+retrieval has not yet shown an improvement on the held-out benchmark. The
+validated score is the fixed-item-factor prediction from the personal vector.
+
 ## Size policy
 
 The 69 MB raw ratings file is acceptable on a desktop but is not needed on the
@@ -214,6 +238,7 @@ Run its synthetic tests with:
 python scripts\test_recommender.py
 python scripts\test_work_resolver.py
 python scripts\test_latent_recommender.py
+python scripts\test_latent_inference.py
 ```
 
 No Android importer is provided in v0.6. Adding one requires a separately

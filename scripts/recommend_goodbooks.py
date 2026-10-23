@@ -210,15 +210,14 @@ def load_genre_goodreads_ids(
     return goodreads_ids
 
 
-def map_catalog(
+def match_catalog(
     catalog: list[dict],
-    local_scores: dict[str, float],
     isbn_to_dataset_ids: dict[str, list[int]],
     title_author_to_dataset_ids: dict[tuple[str, str], list[int]] | None = None,
     work_to_dataset_ids: dict[int, list[int]] | None = None,
     explicit_work_aliases: dict[str, int] | None = None,
-) -> tuple[dict[int, float], set[int], list[str]]:
-    dataset_scores = {}
+) -> tuple[dict[str, int], set[int], list[str]]:
+    local_to_dataset = {}
     catalog_dataset_ids = set()
     ambiguous = []
     dataset_owners = {}
@@ -251,11 +250,31 @@ def map_catalog(
             if previous_owner not in ambiguous:
                 ambiguous.append(previous_owner)
             ambiguous.append(book["id"])
-            dataset_scores.pop(dataset_id, None)
+            local_to_dataset.pop(previous_owner, None)
             continue
         dataset_owners[dataset_id] = book["id"]
-        if book.get("enabled", True) and book["id"] in local_scores:
-            dataset_scores[dataset_id] = local_scores[book["id"]]
+        local_to_dataset[book["id"]] = dataset_id
+    return local_to_dataset, catalog_dataset_ids, ambiguous
+
+
+def map_catalog(
+    catalog: list[dict],
+    local_scores: dict[str, float],
+    isbn_to_dataset_ids: dict[str, list[int]],
+    title_author_to_dataset_ids: dict[tuple[str, str], list[int]] | None = None,
+    work_to_dataset_ids: dict[int, list[int]] | None = None,
+    explicit_work_aliases: dict[str, int] | None = None,
+) -> tuple[dict[int, float], set[int], list[str]]:
+    local_to_dataset, catalog_dataset_ids, ambiguous = match_catalog(
+        catalog, isbn_to_dataset_ids, title_author_to_dataset_ids,
+        work_to_dataset_ids, explicit_work_aliases,
+    )
+    enabled = {book["id"] for book in catalog if book.get("enabled", True)}
+    dataset_scores = {
+        dataset_id: local_scores[local_id]
+        for local_id, dataset_id in local_to_dataset.items()
+        if local_id in enabled and local_id in local_scores
+    }
     return dataset_scores, catalog_dataset_ids, ambiguous
 
 

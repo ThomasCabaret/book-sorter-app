@@ -73,6 +73,7 @@ python3 scripts/test_bundle.py
 python3 scripts/test_recommender.py
 python3 scripts/test_work_resolver.py
 python3 scripts/test_latent_recommender.py
+python3 scripts/test_latent_inference.py
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -379,6 +380,7 @@ scripts/inspect_bundle.py                 Verified read-only desktop bundle pars
 scripts/make_example_export.py            Demo export from seed (no votes)
 scripts/resolve_work_aliases.py            Cached ISBN/work identity resolver
 scripts/train_latent_recommender.py        Pairwise external-ratings model trainer
+scripts/recommend_latent.py                Personal-vector fit and latent recommendations
 config/goodbooks_work_aliases.csv          Reviewed French-to-Goodreads work links
 samples/initial-catalog-example.tar.gz    Real standalone tarball with zero votes
 docs/EXCHANGE_FORMAT.md                   Schema for a future desktop companion
