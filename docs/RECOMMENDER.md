@@ -16,6 +16,12 @@ ISBN-13 metadata, and user tags including fantasy and science fiction. Its
 Keep the downloaded CSV files in `data/goodbooks-10k/`, which is ignored by
 Git.
 
+The official v1.0 archive has now been downloaded locally from the GitHub
+release. It is 32,675,160 bytes with local SHA-256
+`261b97b56db61f3fb2ce5aadbb13704d30179fcc986c17ace665a0af9ed00731`.
+The extracted source contains 5,976,479 ratings from 53,424 readers. It remains
+ignored and is not redistributed by this repository.
+
 Two larger sources were evaluated but are not the default:
 
 - The [UCSD Goodreads Book Graph](https://cseweb.ucsd.edu/~jmcauley/datasets/goodreads.html)
@@ -57,6 +63,14 @@ This is deliberately interpretable and small. Goodreads ratings are coarse,
 selection-biased observations, so the output is a recommendation heuristic,
 not a probability that the reader will like a book.
 
+The real distribution shows that 25 is only a quality guard, not a useful size
+reduction for this already-filtered dataset: it retains 53,390 readers and
+5,975,712 ratings. A threshold of 100 retains 37,084 readers and 4,615,637
+ratings; 150 collapses to 4,235 readers and 688,371 ratings. The training stage
+must therefore select the threshold by held-out ranking quality, not by an
+arbitrary storage target. The conservative fantasy/SF tag set covers 4,637 of
+the 10,000 works and 3,197,648 ratings before the reader filter.
+
 ## Usage
 
 Download `books.csv`, `ratings.csv`, and optionally `tags.csv` plus
@@ -87,6 +101,9 @@ solves this **inside its ratings data**: its documentation states that the
 `book_id` used by `ratings.csv` maps to `work_id`, so ratings for different
 editions are aggregated. The remaining problem is identifying which Goodreads
 work corresponds to a BookDuels ISBN when goodbooks-10k lists another edition.
+The source CSV stores most ISBN-13 values in a shortened scientific notation;
+the loader restores the lost thirteenth checksum digit from the preserved first
+twelve digits before attempting an exact match.
 
 The recommender uses three conservative levels:
 

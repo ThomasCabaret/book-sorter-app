@@ -64,16 +64,34 @@ def normalize_isbn13(raw: str | None) -> str | None:
         integral = number.to_integral_value()
         if number != integral:
             return None
-        candidate = str(integral)
+        candidate = format(integral, "f")
     except InvalidOperation:
         return None
-    return candidate if valid_isbn13(candidate) else None
+    if valid_isbn13(candidate):
+        return candidate
+    # goodbooks-10k serialized many ISBN-13 values through a floating-point
+    # scientific notation with only the first twelve significant digits. The
+    # lost final digit is the ISBN checksum and is therefore exactly recoverable.
+    if len(candidate) == 13 and candidate.isdigit():
+        prefix = candidate[:12]
+        checksum = (-sum(
+            int(digit) * (1 if index % 2 == 0 else 3)
+            for index, digit in enumerate(prefix)
+        )) % 10
+        recovered = prefix + str(checksum)
+        return recovered if valid_isbn13(recovered) else None
+    return None
 
 
 def normalize_text(value: str) -> str:
     decomposed = unicodedata.normalize("NFKD", value.casefold())
     without_marks = "".join(character for character in decomposed if not unicodedata.combining(character))
     return " ".join(re.sub(r"[^a-z0-9]+", " ", without_marks).split())
+
+
+def normalize_author(value: str) -> str:
+    """Tolerate Babelio's surname-first ordering without fuzzy name matching."""
+    return " ".join(sorted(normalize_text(value).split()))
 
 
 def logistic(value: float) -> float:
@@ -148,7 +166,7 @@ def load_books(path: pathlib.Path) -> tuple[
             books[book_id] = meta
             if isbn13:
                 by_isbn[isbn13].append(book_id)
-            author_key = normalize_text(meta.authors)
+            author_key = normalize_author(meta.authors)
             for candidate_title in {meta.title, meta.original_title} - {""}:
                 by_title_author[(normalize_text(candidate_title), author_key)].append(book_id)
             if meta.work_id is not None:
@@ -215,7 +233,7 @@ def map_catalog(
         else:
             matches = {dataset_id for isbn in aliases for dataset_id in isbn_to_dataset_ids.get(isbn, [])}
             if not matches:
-                title_author_key = (normalize_text(book["title"]), normalize_text(book["author"]))
+                title_author_key = (normalize_text(book["title"]), normalize_author(book["author"]))
                 title_matches = title_author_to_dataset_ids.get(title_author_key, [])
                 if len(title_matches) == 1:
                     matches = set(title_matches)
