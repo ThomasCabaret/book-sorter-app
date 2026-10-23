@@ -156,11 +156,12 @@ python scripts\resolve_work_aliases.py `
   --output data\goodbooks-10k\work_aliases.csv
 ```
 
-The current run resolves 71 of 155 retained records, including 69 active
+The current run resolves 76 of 155 retained records, including 74 active
 records, with zero ambiguity. The unresolved set is expected: many French or
 recent genre works are outside the 2017-era goodbooks top 10,000. French pocket
 splits such as the two active *Anatèm* volumes are intentionally not forced
-onto one external work.
+onto one external work. The manual evidence and the deliberately rejected
+near-matches are recorded in `docs/GOODBOOKS_MAPPING_AUDIT.md`.
 
 ## Pairwise latent model
 

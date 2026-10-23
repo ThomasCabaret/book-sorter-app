@@ -225,8 +225,10 @@ agrees with the BookDuels order, and ranks books favored by those neighbors.
 Goodbooks ratings already target abstract Goodreads works rather than editions;
 exact ISBN, Open Library's cached edition links, unique title+author, and the
 reviewed `config/goodbooks_work_aliases.csv` bridge the local catalog to those
-works. The current resolver safely matches 71 of the 155 retained records (69
-active), with no silent merge of split French volumes.
+works. The current resolver safely matches 76 of the 155 retained records (74
+active), with no silent merge of split French volumes. The evidence and
+rejected near-matches are recorded in
+[`docs/GOODBOOKS_MAPPING_AUDIT.md`](docs/GOODBOOKS_MAPPING_AUDIT.md).
 Goodbooks-10k is the first supported source because its 10,000 work-level
 records and six million ratings are manageable on a PC and cover fantasy/SF
 through tags. Raw CSV files and generated personal reports are ignored.
@@ -384,6 +386,7 @@ scripts/recommend_latent.py                Personal-vector fit and latent recomm
 config/goodbooks_work_aliases.csv          Reviewed French-to-Goodreads work links
 samples/initial-catalog-example.tar.gz    Real standalone tarball with zero votes
 docs/EXCHANGE_FORMAT.md                   Schema for a future desktop companion
+docs/GOODBOOKS_MAPPING_AUDIT.md           Reviewed aliases and rejected near-matches
 AGENTS.md                                 Codex implementation guardrails
 ```
 
