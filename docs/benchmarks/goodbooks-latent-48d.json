@@ -1,0 +1,47 @@
+{
+  "format": "bookduels.goodbooks-latent.v1",
+  "independentOfBookDuelsVotes": true,
+  "source": {
+    "name": "goodbooks-10k v1.0",
+    "license": "CC BY-SA 4.0",
+    "booksSha256": "4d21d0e0433128657c752e3a3d0405ac0ec11675d6c70c64cb0abf4ab1acb76a",
+    "ratingsSha256": "1ee8a97172bd6d97147a30d9cfb3029ac240bd27ba2aa9365981c051c65113f8"
+  },
+  "parameters": {
+    "seed": 20261023,
+    "dimensions": 48,
+    "minReaderRatings": 25,
+    "epochs": 6,
+    "pairsPerReaderPerEpoch": 48,
+    "learningRate": 0.01,
+    "regularization": 0.0005,
+    "validationReaderFraction": 0.1,
+    "queryFraction": 0.25,
+    "personalizationPairsPerReader": 64,
+    "personalizationEpochs": 1,
+    "personalizationLearningRate": 0.01
+  },
+  "counts": {
+    "items": 10000,
+    "eligibleReaders": 53390,
+    "trainingReaders": 48051,
+    "validationReaders": 5339,
+    "ratings": 5975712
+  },
+  "validation": {
+    "personalized": {
+      "pairwiseAccuracy": 0.665370131950363,
+      "pairwiseLogLoss": 0.6108143956448069
+    },
+    "itemBiasOnly": {
+      "pairwiseAccuracy": 0.6349332994844084,
+      "pairwiseLogLoss": 0.6440921851854918
+    },
+    "meanRatingBaseline": {
+      "pairwiseAccuracy": 0.6341142763885614,
+      "pairwiseLogLoss": 0.6488393342885818
+    },
+    "queryPairs": 330882
+  },
+  "artifactBytes": 5400664
+}

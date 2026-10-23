@@ -71,6 +71,8 @@ offline app use except on-demand cover images).
 ./scripts/test-archive.sh
 python3 scripts/test_bundle.py
 python3 scripts/test_recommender.py
+python3 scripts/test_work_resolver.py
+python3 scripts/test_latent_recommender.py
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -215,17 +217,25 @@ editing function.
 
 ## Offline recommendations
 
-The optional desktop prototype is documented in
+The optional desktop pipeline is documented in
 [`docs/RECOMMENDER.md`](docs/RECOMMENDER.md). It validates a portable export,
 matches exact ISBN-13 aliases, finds external readers whose relative ordering
 agrees with the BookDuels order, and ranks books favored by those neighbors.
 Goodbooks ratings already target abstract Goodreads works rather than editions;
-exact ISBN, unique title+author and optional curated work-ID aliases bridge the
-local catalog to those works. External readers with fewer than 25 ratings are
-discarded by default.
+exact ISBN, Open Library's cached edition links, unique title+author, and the
+reviewed `config/goodbooks_work_aliases.csv` bridge the local catalog to those
+works. The current resolver safely matches 71 of the 155 retained records (69
+active), with no silent merge of split French volumes.
 Goodbooks-10k is the first supported source because its 10,000 work-level
 records and six million ratings are manageable on a PC and cover fantasy/SF
 through tags. Raw CSV files and generated personal reports are ignored.
+
+The heavier pairwise factor model is trained entirely from the external
+ratings, independently of BookDuels votes. On a fixed set of 5,339 completely
+held-out readers, the selected 48-dimensional model reaches 66.54% accuracy on
+330,882 unseen preference pairs versus 63.49% for its item-bias baseline. Its
+compressed derivative is 5.40 MB. These are empirical ranking metrics, not a
+probability that a recommendation will be liked.
 
 There is intentionally no on-device recommendation import yet. A later phone
 extension should use only a compact, attributed derivative after its data
@@ -367,6 +377,9 @@ scripts/test-archive.sh                   USTAR/GZIP interoperability smoke chec
 scripts/test_bundle.py                    Positive/negative Python bundle tests
 scripts/inspect_bundle.py                 Verified read-only desktop bundle parser
 scripts/make_example_export.py            Demo export from seed (no votes)
+scripts/resolve_work_aliases.py            Cached ISBN/work identity resolver
+scripts/train_latent_recommender.py        Pairwise external-ratings model trainer
+config/goodbooks_work_aliases.csv          Reviewed French-to-Goodreads work links
 samples/initial-catalog-example.tar.gz    Real standalone tarball with zero votes
 docs/EXCHANGE_FORMAT.md                   Schema for a future desktop companion
 AGENTS.md                                 Codex implementation guardrails
@@ -382,5 +395,5 @@ AGENTS.md                                 Codex implementation guardrails
    explicit preview for uncertain multi-edition merges.
 4. Calibrated ranking uncertainty, benchmark pair selection, and decide whether
    Joker should be split into "not now" and "genuine indifference".
-5. Create a separate PC recommender that joins catalog identifiers to other
-   rating datasets; keep this second tool separate from on-device voting.
+5. Define and test the compact on-device recommendation asset and its French
+   UI without ever converting external ratings into duel-history events.

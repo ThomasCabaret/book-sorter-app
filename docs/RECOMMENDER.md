@@ -1,9 +1,9 @@
 # Offline recommendation prototype
 
-BookDuels v0.6 includes a desktop-only, dependency-free prototype that compares
-the reader's pairwise order with other readers' coarse star-rating orders. Raw
-third-party ratings are never copied into the Android app, the SQLite event
-log, a portable BookDuels export, or Git.
+BookDuels v0.6 includes a desktop-only interpretable-neighbor prototype and a
+heavier pairwise latent-model trainer. Raw third-party ratings are never copied
+into the SQLite event log, a portable BookDuels export, or Git. Only a compact,
+attributed model derivative may later be reviewed for Android packaging.
 
 ## Dataset choice
 
@@ -105,11 +105,13 @@ The source CSV stores most ISBN-13 values in a shortened scientific notation;
 the loader restores the lost thirteenth checksum digit from the preserved first
 twelve digits before attempting an exact match.
 
-The recommender uses three conservative levels:
+The recommender uses four conservative levels:
 
-1. an explicit local `bookduels_book_id` → `goodreads_work_id` correction;
-2. an ISBN-13 equal to the representative goodbooks edition;
-3. an exact normalized title-and-author match, only when unique.
+1. a reviewed local `bookduels_book_id` → `goodreads_work_id` correction;
+2. a cached Open Library ISBN result whose Goodreads edition ID occurs in
+   goodbooks-10k;
+3. an ISBN-13 equal to the representative goodbooks edition;
+4. an exact normalized title-and-author match, only when unique.
 
 For explicit corrections, create an ignored CSV such as
 `data/goodbooks-10k/work_aliases.csv`:
@@ -134,21 +136,84 @@ not to perform hundreds of per-book harvest requests, so any broad resolver
 should use a bulk dump; low-volume manual ISBN corrections may use the ISBN API
 and cache the answer. Neither source justifies a fuzzy automatic merge.
 
+### Cached resolver
+
+`scripts/resolve_work_aliases.py` queries Open Library Search in small batches,
+identifies itself, waits between requests, and stores responses in the ignored
+data directory. It never treats title similarity alone as proof. Reviewed
+translations live separately in `config/goodbooks_work_aliases.csv`, including
+their human-readable evidence. Unknown external work IDs, unknown local IDs,
+and two enabled local records resolving to one Goodreads work fail or become
+explicit ambiguities rather than silent merges.
+
+```powershell
+python scripts\resolve_work_aliases.py `
+  --catalog app\src\main\assets\books.json `
+  --books data\goodbooks-10k\books.csv `
+  --cache data\goodbooks-10k\openlibrary_resolution_cache.json `
+  --reviewed-aliases config\goodbooks_work_aliases.csv `
+  --report data\goodbooks-10k\work_resolution_report.json `
+  --output data\goodbooks-10k\work_aliases.csv
+```
+
+The current run resolves 71 of 155 retained records, including 69 active
+records, with zero ambiguity. The unresolved set is expected: many French or
+recent genre works are outside the 2017-era goodbooks top 10,000. French pocket
+splits such as the two active *Anatèm* volumes are intentionally not forced
+onto one external work.
+
+## Pairwise latent model
+
+`scripts/train_latent_recommender.py` learns a Bradley-Terry/BPR-style matrix
+factorization from the relative order induced by external 1–5 ratings. It does
+not read a BookDuels archive or any personal duel. Ten percent of eligible
+external readers are completely excluded from global training. For each of
+those readers, the validator freezes item factors, fits a small personal vector
+from support comparisons, and scores unseen query comparisons. This directly
+simulates the later phone-side operation.
+
+The selected reproducible run uses 48 dimensions, 53,390 eligible readers,
+48 sampled pairs per training reader for six epochs, and a strongly shrunk
+single personalization step. On 5,339 held-out readers and 330,882 query pairs:
+
+- personalized latent model: 66.537% accuracy, 0.6108 log-loss;
+- item-bias-only baseline: 63.493% accuracy, 0.6441 log-loss;
+- mean-rating baseline: 63.411% accuracy, 0.6488 log-loss.
+
+The compressed 48-dimensional artifact is 5,400,664 bytes. A 32-dimensional
+variant reached 66.44% at 3.69 MB; 64 dimensions reached 66.45% at 7.11 MB, so
+48 dimensions remains the measured choice. The checked-in benchmark manifest
+is `docs/benchmarks/goodbooks-latent-48d.json`; raw data and generated `.npz`
+files remain ignored.
+
+```powershell
+python scripts\train_latent_recommender.py `
+  --books data\goodbooks-10k\books.csv `
+  --ratings data\goodbooks-10k\ratings.csv `
+  --output data\goodbooks-10k\models\pairwise-48d.npz `
+  --manifest data\goodbooks-10k\models\pairwise-48d.manifest.json
+```
+
+The artifact contains compact item factors and anonymous external-reader
+factors, not raw rating rows. Item factors provide the validated collaborative
+prediction; reader factors preserve a path for an explicit nearest-profile
+hybrid, but that second scoring layer must itself be evaluated before being
+claimed better or shipped. On-device integration is still pending.
+
 ## Size policy
 
-The 69 MB raw ratings file is acceptable on a desktop and would technically fit
-on the phone, but shipping it would make every installation pay for data that
-is mostly irrelevant. The current pipeline instead removes readers below the
-configurable `--min-reader-ratings` threshold and can restrict candidates to
-the conservative fantasy/SF tag set. Only the final recommendation JSON—usually
-kilobytes—needs to be considered for a future phone import. Before an adaptive
-fully on-device model is added, real filtered sizes and recall should be
-measured on the downloaded data rather than guessed.
+The 69 MB raw ratings file is acceptable on a desktop but is not needed on the
+phone. The validated factor derivative is about 5.4 MB and contains no raw
+rating rows. Candidate filtering can still use the conservative fantasy/SF tag
+set. Packaging, license attribution, Kotlin inference, and upgrade semantics
+must be reviewed before that derivative becomes an Android asset.
 
 Run its synthetic tests with:
 
 ```powershell
 python scripts\test_recommender.py
+python scripts\test_work_resolver.py
+python scripts\test_latent_recommender.py
 ```
 
 No Android importer is provided in v0.6. Adding one requires a separately

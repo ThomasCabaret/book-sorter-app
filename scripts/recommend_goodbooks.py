@@ -36,6 +36,7 @@ SIMILARITY_SHRINKAGE = 12.0
 class BookMeta:
     book_id: int
     goodreads_book_id: int
+    best_book_id: int
     work_id: int | None
     isbn13: str | None
     title: str
@@ -156,6 +157,7 @@ def load_books(path: pathlib.Path) -> tuple[
             meta = BookMeta(
                 book_id=book_id,
                 goodreads_book_id=int(row["goodreads_book_id"]),
+                best_book_id=int(row.get("best_book_id") or row["goodreads_book_id"]),
                 work_id=int(row["work_id"]) if row.get("work_id") else None,
                 isbn13=isbn13,
                 title=row["title"].strip(),

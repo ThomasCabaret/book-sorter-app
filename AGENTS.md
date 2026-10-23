@@ -89,6 +89,8 @@ ranking/duels, not from the durable event log.
 - `./scripts/test-archive.sh` produces tar.gz in Kotlin and opens in Python.
 - `python3 scripts/test_bundle.py` checks good and tampered desktop archives.
 - `python3 scripts/test_recommender.py` checks the offline recommendation core.
+- `python3 scripts/test_work_resolver.py` checks conservative work identity links.
+- `python3 scripts/test_latent_recommender.py` checks pair sampling and validation splits.
 - `python3 scripts/inspect_bundle.py samples/initial-catalog-example.tar.gz`
   verifies the shipped 155-book/zero-event example.
 - `./gradlew :app:assembleDebug`, JVM unit tests, and an initial Pixel 7a
