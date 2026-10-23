@@ -73,10 +73,14 @@ ranking/duels, not from the durable event log.
   calibrated posterior rank probabilities.
 - Never treat Joker as tie; aggregate repeated jokers and suppress proposals
   of that pair by the current cubic penalty.
-- While unseen pairs remain, reserve one proposal in twenty for a deliberate
-  consistency recheck. Select it from previously seen pairs using model
-  uncertainty, direct disagreement and Ranked Pairs cycle tension; repeated
-  Jokers remain cubically suppressed. This is a heuristic audit, not a
+- While unseen pairs remain, independently sample a hidden consistency recheck
+  for each proposal (5% by default, user-configurable). The Android caller must
+  derive stable per-proposal entropy from a private random installation secret:
+  never use a visible periodic cadence and never reveal whether the current
+  pair is a recheck. Select rechecks from seen
+  pairs using model uncertainty, direct disagreement and Ranked Pairs cycle
+  tension; repeated Jokers remain cubically suppressed. Aggregate consistency
+  statistics may appear only in Settings. This is a heuristic audit, not a
   psychological measurement.
 
 ## Build and test

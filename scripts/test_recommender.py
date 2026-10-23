@@ -51,6 +51,22 @@ class RecommenderTest(unittest.TestCase):
         self.assertEqual({7}, excluded)
         self.assertEqual({"local-a", "local-b"}, set(ambiguous))
 
+    def test_explicit_work_alias_bridges_a_different_edition_isbn(self):
+        catalog = [{
+            "id": "local-a", "enabled": True, "title": "Titre traduit",
+            "author": "Auteur", "isbn13": isbn13("978000000003"), "isbnAliases": [],
+        }]
+        scores, excluded, ambiguous = map_catalog(
+            catalog,
+            {"local-a": 1.25},
+            {},
+            work_to_dataset_ids={9001: [7]},
+            explicit_work_aliases={"local-a": 9001},
+        )
+        self.assertEqual({7: 1.25}, scores)
+        self.assertEqual({7}, excluded)
+        self.assertEqual([], ambiguous)
+
     def test_similar_readers_recommend_their_shared_favorite(self):
         root = pathlib.Path(__file__).resolve().parents[1]
         (root / "build").mkdir(exist_ok=True)
@@ -82,9 +98,10 @@ class RecommenderTest(unittest.TestCase):
                     [2, 1, 1], [2, 2, 4], [2, 3, 5], [2, 4, 1], [2, 5, 5],
                     [3, 1, 5], [3, 2, 3], [3, 3, 1], [3, 4, 4], [3, 5, 1],
                 ])
-            books, _ = load_books(books_path)
+            books, _, _, _ = load_books(books_path)
             similarities, means, eligible = find_neighbors(
-                ratings_path, {1: 2.0, 2: 1.0, 3: 0.0}, neighbor_count=2, min_overlap=3
+                ratings_path, {1: 2.0, 2: 1.0, 3: 0.0}, neighbor_count=2,
+                min_overlap=3, min_reader_ratings=5,
             )
             recommendations = collect_recommendations(
                 ratings_path, books, similarities, means, {1, 2, 3}, None,
@@ -93,6 +110,12 @@ class RecommenderTest(unittest.TestCase):
             self.assertEqual(2, eligible)
             self.assertEqual({1, 3}, set(similarities))
             self.assertEqual(4, recommendations[0]["bookId"])
+            filtered, _, filtered_eligible = find_neighbors(
+                ratings_path, {1: 2.0, 2: 1.0, 3: 0.0}, neighbor_count=2,
+                min_overlap=3, min_reader_ratings=6,
+            )
+            self.assertEqual({}, filtered)
+            self.assertEqual(0, filtered_eligible)
 
 
 if __name__ == "__main__":

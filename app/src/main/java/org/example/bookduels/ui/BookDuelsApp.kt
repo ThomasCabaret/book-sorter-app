@@ -32,6 +32,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -67,7 +68,9 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private enum class Tab(val label: String) { DUELS("Duels"), RANKING("Classement"), LIBRARY("Livres"), HISTORY("Historique") }
+private enum class Tab(val label: String) {
+    DUELS("Duels"), RANKING("Classement"), LIBRARY("Livres"), HISTORY("Historique"), SETTINGS("Réglages")
+}
 
 @Composable
 internal fun BookDuelsApp(
@@ -79,6 +82,7 @@ internal fun BookDuelsApp(
     onImportCsv: () -> Unit,
     onAddBook: (String, String, String?) -> Unit,
     onToggleBook: (String, Boolean) -> Unit,
+    onConsistencyCheckPercentChanged: (Int) -> Unit,
     onMessageDismissed: () -> Unit,
 ) {
     var tab by remember { mutableStateOf(Tab.DUELS) }
@@ -94,7 +98,10 @@ internal fun BookDuelsApp(
                     NavigationBarItem(
                         selected = tab == item,
                         onClick = { tab = item },
-                        icon = { Text(when (item) { Tab.DUELS -> "↔"; Tab.RANKING -> "≡"; Tab.LIBRARY -> "+"; Tab.HISTORY -> "◷" }) },
+                        icon = { Text(when (item) {
+                            Tab.DUELS -> "↔"; Tab.RANKING -> "≡"; Tab.LIBRARY -> "+"
+                            Tab.HISTORY -> "◷"; Tab.SETTINGS -> "⚙"
+                        }) },
                         label = { Text(item.label) },
                     )
                 }
@@ -109,6 +116,7 @@ internal fun BookDuelsApp(
                 tab == Tab.RANKING -> RankingScreen(state.report!!)
                 tab == Tab.LIBRARY -> LibraryScreen(state, onImportCsv, onAddBook, onToggleBook)
                 tab == Tab.HISTORY -> HistoryScreen(state, onProtectedAction, onExport)
+                tab == Tab.SETTINGS -> SettingsScreen(state, onConsistencyCheckPercentChanged)
             }
         }
     }
@@ -132,14 +140,6 @@ private fun DuelScreen(
             "Glisse n'importe quelle jaquette à gauche OU à droite pour choisir ce livre.",
             style = MaterialTheme.typography.bodySmall,
         )
-        if (report.isConsistencyCheck) {
-            Text(
-                "Vérification de cohérence · paire déjà vue, choisie car elle reste incertaine ou en tension.",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.tertiary,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -181,6 +181,62 @@ private fun DuelScreen(
                 onChosen = { onDuelAction(duel, duel.second.id) },
                 onPutAside = { onToggleBook(duel.second.id, false) },
             )
+        }
+    }
+}
+
+@Composable
+private fun SettingsScreen(
+    state: AppUiState,
+    onConsistencyCheckPercentChanged: (Int) -> Unit,
+) {
+    val report = state.report ?: return
+    var displayedPercent by remember(state.consistencyCheckPercent) {
+        mutableFloatStateOf(state.consistencyCheckPercent.toFloat())
+    }
+    LazyColumn(
+        Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        item {
+            Spacer(Modifier.height(12.dp))
+            Text("Réglages", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(14.dp))
+            Text("Vérifications en aveugle", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                "Une proportion aléatoire des propositions reprend une paire utilement incertaine. " +
+                    "Le duel ne révèle jamais s'il s'agit d'une vérification.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Slider(
+                value = displayedPercent,
+                onValueChange = { displayedPercent = it },
+                onValueChangeFinished = {
+                    onConsistencyCheckPercentChanged(displayedPercent.roundToInt())
+                },
+                valueRange = 0f..20f,
+                steps = 19,
+            )
+            val roundedPercent = displayedPercent.roundToInt()
+            Text(
+                if (roundedPercent == 0) "Désactivées"
+                else "$roundedPercent % en moyenne${if (roundedPercent == 5) " · environ 1 sur 20" else ""}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(18.dp))
+            Text("Cohérence observée", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            StatLine("Paires votées plusieurs fois", report.repeatedVotePairs.toString())
+            StatLine("Votes répétés", report.repeatedPreferenceVotes.toString())
+            StatLine(
+                "Accord avec le choix majoritaire",
+                report.pairwiseConsistency?.let { "${String.format(Locale.FRANCE, "%.0f", it * 100)} %" } ?: "—",
+            )
+            Text(
+                "Cette mesure est descriptive : elle agrège les paires répétées et ne constitue pas une probabilité calibrée.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

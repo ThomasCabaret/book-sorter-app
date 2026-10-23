@@ -34,9 +34,11 @@ short on-device interaction check when the phone is next connected.
   cards expose the same quick set-aside action.
 - Ranked Pairs (Tideman) over observed majority edges with a regularized
   Bradley-Terry estimate for unconstrained ranking and pair acquisition.
-  While unseen pairs remain, one proposal in twenty deliberately rechecks a
-  seen pair selected from model uncertainty, conflicting answers, cycle
-  tension and a cubic penalty for repeated Jokers. Metrics are heuristics,
+  While unseen pairs remain, an unpredictable 5% by default of proposals
+  silently recheck a seen pair selected from model uncertainty, conflicting
+  answers, cycle tension and a cubic penalty for repeated Jokers. The rate is
+  adjustable in Settings and the duel never reveals that it is a recheck.
+  Metrics are heuristics,
   **not calibrated confidence probabilities or psychological measurements**.
 - An offline desktop recommender can compare the pairwise order with similar
   readers from a locally downloaded goodbooks-10k dataset and produce a small
@@ -150,9 +152,9 @@ the exact original CSV reports 0 new books (as expected).
   Joker follows the same fast flow. **Mettre de côté** removes either displayed
   book from upcoming duels and the ranking without deleting its history. No
   decision is saved for just opening a duel.
-  Approximately every twentieth proposal is labelled **Vérification de
-  cohérence** and revisits a non-trivial previously seen pair; ordinary
-  proposals remain unseen pairs while any are available.
+  By default, each proposal has an independent 5% chance of silently revisiting
+  a useful non-trivial pair. This is deliberately indistinguishable from an
+  ordinary duel and is not tied to the visible vote count.
 - **Classement**: provisional Ranked Pairs order, total votes, jokers,
   comparison coverage, graph components, skipped cyclic edges, uncertain
   Bradley-Terry proxy; a strict direct Condorcet winner is shown only when
@@ -162,6 +164,9 @@ the exact original CSV reports 0 new books (as expected).
   pair selection/ranking, **not from history**; it can be restored at any time.
 - **Historique**: chronological user decisions, neutralize an active suffix,
   reinstate the most recent batch; export a complete portable `.tar.gz`.
+- **Réglages**: adjust the hidden consistency-check rate from 0 to 20% and see
+  aggregate repeat consistency statistics. It never identifies the current or
+  any individual verification duel.
 
 A CSV with `Statut=Lu` entries is a **list of read books**, not an ordered list
 and not a source of pairwise outcomes. Ratings are never included in the
@@ -214,6 +219,10 @@ The optional desktop prototype is documented in
 [`docs/RECOMMENDER.md`](docs/RECOMMENDER.md). It validates a portable export,
 matches exact ISBN-13 aliases, finds external readers whose relative ordering
 agrees with the BookDuels order, and ranks books favored by those neighbors.
+Goodbooks ratings already target abstract Goodreads works rather than editions;
+exact ISBN, unique title+author and optional curated work-ID aliases bridge the
+local catalog to those works. External readers with fewer than 25 ratings are
+discarded by default.
 Goodbooks-10k is the first supported source because its 10,000 work-level
 records and six million ratings are manageable on a PC and cover fantasy/SF
 through tags. Raw CSV files and generated personal reports are ignored.

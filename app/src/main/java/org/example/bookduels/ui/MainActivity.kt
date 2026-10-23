@@ -41,6 +41,7 @@ class MainActivity : FragmentActivity() {
                     onImportCsv = { csvLauncher.launch(arrayOf("*/*")) },
                     onAddBook = model::addManually,
                     onToggleBook = model::setEnabled,
+                    onConsistencyCheckPercentChanged = model::setConsistencyCheckPercent,
                     onMessageDismissed = model::dismissMessage,
                 )
             }

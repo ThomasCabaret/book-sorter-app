@@ -23,6 +23,10 @@ import org.example.bookduels.data.CatalogImportResult
 import org.example.bookduels.data.EventStore
 import org.example.bookduels.data.PortableArchive
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.security.SecureRandom
 
 internal data class SelectionFeedback(
     val duel: Duel,
@@ -42,6 +46,7 @@ internal data class AppUiState(
     val restorableCount: Int = 0,
     val selectionFeedback: SelectionFeedback? = null,
     val quickUndoCount: Int = 0,
+    val consistencyCheckPercent: Int = 5,
     val message: String? = null,
     val error: String? = null,
 )
@@ -50,10 +55,26 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
     private companion object {
         const val SELECTION_FEEDBACK_MS = 250L
         const val QUICK_UNDO_LIMIT = 3
+        const val DEFAULT_CONSISTENCY_CHECK_PERCENT = 5
+        const val MAX_CONSISTENCY_CHECK_PERCENT = 20
+        const val SETTINGS_NAME = "bookduels_settings"
+        const val CONSISTENCY_RATE_KEY = "consistency_check_percent"
+        const val PROPOSAL_SECRET_KEY = "proposal_random_secret"
     }
 
     private val store = EventStore(application)
-    private val state = MutableStateFlow(AppUiState())
+    private val settings = application.getSharedPreferences(SETTINGS_NAME, 0)
+    private val proposalSecret = if (settings.contains(PROPOSAL_SECRET_KEY)) {
+        settings.getLong(PROPOSAL_SECRET_KEY, 0L)
+    } else {
+        SecureRandom().nextLong().also { generated ->
+            settings.edit().putLong(PROPOSAL_SECRET_KEY, generated).apply()
+        }
+    }
+    private var consistencyCheckPercent = settings.getInt(
+        CONSISTENCY_RATE_KEY, DEFAULT_CONSISTENCY_CHECK_PERCENT
+    ).coerceIn(0, MAX_CONSISTENCY_CHECK_PERCENT)
+    private val state = MutableStateFlow(AppUiState(consistencyCheckPercent = consistencyCheckPercent))
     private val recentDecisions = ArrayDeque<RecentDecision>()
     val uiState: StateFlow<AppUiState> = state.asStateFlow()
 
@@ -73,11 +94,19 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
 
     private suspend fun refresh(message: String? = null, preferredDuel: Duel? = null) {
         val undoCount = recentDecisions.size
+        val ratePercent = consistencyCheckPercent
         val snapshot = withContext(Dispatchers.IO) {
             val saved = store.snapshot()
             val catalog = saved.catalog.map { it.book }
             val replay = org.example.bookduels.core.EventReplay.reconstruct(saved.events)
-            val analyzed = DuelEngine.analyze(catalog, replay.activeEvents, replay.lastSequence)
+            val selectionEntropy = proposalEntropy(replay.lastSequence, catalog)
+            val analyzed = DuelEngine.analyze(
+                catalog,
+                replay.activeEvents,
+                replay.lastSequence,
+                consistencyCheckRate = ratePercent / 100.0,
+                selectionEntropy = selectionEntropy,
+            )
             val byId = catalog.associateBy { it.id }
             val restoredDuel = preferredDuel?.let { previous ->
                 val first = byId[previous.first.id]
@@ -90,6 +119,7 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
                 loading = false, catalog = catalog, report = report, history = replay.history,
                 revision = replay.lastSequence, restorableCount = replay.restorableCount,
                 quickUndoCount = undoCount, message = message,
+                consistencyCheckPercent = ratePercent,
             )
         }
         state.value = snapshot
@@ -180,6 +210,26 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
             store.setEnabled(id, enabled)
             if (enabled) "Livre réintégré au classement" else "Livre mis de côté (duels conservés)"
         }
+    }
+
+    fun setConsistencyCheckPercent(percent: Int) {
+        val clamped = percent.coerceIn(0, MAX_CONSISTENCY_CHECK_PERCENT)
+        if (clamped == consistencyCheckPercent) return
+        consistencyCheckPercent = clamped
+        settings.edit().putInt(CONSISTENCY_RATE_KEY, clamped).apply()
+        viewModelScope.launch { refresh() }
+    }
+
+    /** Stable for one proposal state, unpredictable without the private install secret. */
+    private fun proposalEntropy(revision: Long, catalog: List<Book>): Long {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.update(ByteBuffer.allocate(Long.SIZE_BYTES).putLong(proposalSecret).array())
+        digest.update(ByteBuffer.allocate(Long.SIZE_BYTES).putLong(revision).array())
+        catalog.asSequence().filter { it.enabled }.map { it.id }.sorted().forEach { id ->
+            digest.update(id.toByteArray(StandardCharsets.UTF_8))
+            digest.update(0.toByte())
+        }
+        return ByteBuffer.wrap(digest.digest()).long
     }
 
     fun exportBundle(uri: Uri) = performOperation {

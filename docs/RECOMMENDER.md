@@ -41,9 +41,11 @@ share-alike notices required by the dataset license.
 1. Validate the complete BookDuels archive and replay its append-only history.
 2. Fit the same regularized Bradley–Terry scores used by the app, from active
    votes only. Jokers remain non-votes.
-3. Match works only through exact ISBN-13 aliases. Ambiguous matches are
-   reported and skipped; titles are not guessed or silently merged.
-4. For every external reader with enough overlap, compare all non-tied book
+3. Match works first through a curated Goodreads work alias, then exact ISBN-13,
+   then an exact normalized title **and** author only when unique. Ambiguous
+   matches are reported and skipped.
+4. Discard external readers with fewer than 25 ratings by default. For every
+   remaining reader with enough overlap, compare all non-tied book
    pairs. The similarity is a shrunk concordance score: agreement on relative
    order raises it, disagreement lowers it, and tiny overlaps are discounted.
 5. Select the most similar positive neighbors and rank unread candidates from
@@ -68,6 +70,7 @@ python scripts\recommend_goodbooks.py `
   --ratings data\goodbooks-10k\ratings.csv `
   --tags data\goodbooks-10k\tags.csv `
   --book-tags data\goodbooks-10k\book_tags.csv `
+  --min-reader-ratings 25 `
   --output recommendations.json
 ```
 
@@ -76,6 +79,54 @@ script makes two streaming passes over `ratings.csv`; memory use is bounded by
 reader summary data rather than six million full rating objects. The output is
 a small `bookduels.recommendations.v1` JSON report containing diagnostics,
 scores, support counts and book metadata. It is ignored by Git by default.
+
+## Editions and works
+
+An ISBN identifies an edition, not the abstract work. Goodbooks-10k already
+solves this **inside its ratings data**: its documentation states that the
+`book_id` used by `ratings.csv` maps to `work_id`, so ratings for different
+editions are aggregated. The remaining problem is identifying which Goodreads
+work corresponds to a BookDuels ISBN when goodbooks-10k lists another edition.
+
+The recommender uses three conservative levels:
+
+1. an explicit local `bookduels_book_id` → `goodreads_work_id` correction;
+2. an ISBN-13 equal to the representative goodbooks edition;
+3. an exact normalized title-and-author match, only when unique.
+
+For explicit corrections, create an ignored CSV such as
+`data/goodbooks-10k/work_aliases.csv`:
+
+```csv
+bookduels_book_id,goodreads_work_id
+stable-local-id,3634639
+```
+
+Then add `--work-aliases data\goodbooks-10k\work_aliases.csv`. This is also the
+safe answer for split French pocket volumes, omnibuses, translations with
+unrelated titles, or catalog mistakes: these cases cannot be inferred reliably
+from ISBN syntax alone and must not be silently merged.
+
+For a larger one-time edition table, two sources are possible. The UCSD
+Goodreads Book Graph contains about 2.36 million edition records and 1.52
+million works, but it is academic-only and cannot be redistributed. Open
+Library exposes explicit Work and Edition records through its
+[book APIs](https://openlibrary.org/dev/docs/api/books) and monthly
+[bulk dumps](https://openlibrary.org/developers/dumps). Its API guidelines say
+not to perform hundreds of per-book harvest requests, so any broad resolver
+should use a bulk dump; low-volume manual ISBN corrections may use the ISBN API
+and cache the answer. Neither source justifies a fuzzy automatic merge.
+
+## Size policy
+
+The 69 MB raw ratings file is acceptable on a desktop and would technically fit
+on the phone, but shipping it would make every installation pay for data that
+is mostly irrelevant. The current pipeline instead removes readers below the
+configurable `--min-reader-ratings` threshold and can restrict candidates to
+the conservative fantasy/SF tag set. Only the final recommendation JSON—usually
+kilobytes—needs to be considered for a future phone import. Before an adaptive
+fully on-device model is added, real filtered sizes and recall should be
+measured on the downloaded data rather than guessed.
 
 Run its synthetic tests with:
 

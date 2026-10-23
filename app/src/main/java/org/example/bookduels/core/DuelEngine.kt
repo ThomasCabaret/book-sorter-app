@@ -5,6 +5,7 @@ import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.sqrt
 import kotlin.math.exp
+import kotlin.random.Random
 
 private fun logistic(x: Double): Double {
     return if (x >= 0.0) 1.0 / (1.0 + exp(-x)) else exp(x) / (1.0 + exp(x))
@@ -54,6 +55,10 @@ data class RankingReport(
     val cycleEdgesSkipped: Int,
     /** True when the proposed duel deliberately rechecks a previously seen pair. */
     val isConsistencyCheck: Boolean,
+    val repeatedVotePairs: Int,
+    val repeatedPreferenceVotes: Int,
+    /** Modal agreement within pairs voted on at least twice; heuristic only. */
+    val pairwiseConsistency: Double?,
     /** Heuristic score, not a calibrated posterior probability. */
     val adjacentStability: Double,
     /** Strict majority winner from observed direct comparisons with every other book, if any. */
@@ -69,9 +74,15 @@ data class RankingReport(
  */
 object DuelEngine {
     private const val PRIOR_PRECISION = 1.5
-    private const val CONSISTENCY_CHECK_INTERVAL = 20
 
-    fun analyze(catalog: List<Book>, activeEvents: List<VoteEvent>, revision: Long): RankingReport {
+    fun analyze(
+        catalog: List<Book>,
+        activeEvents: List<VoteEvent>,
+        revision: Long,
+        consistencyCheckRate: Double = 0.05,
+        selectionEntropy: Long = revision,
+    ): RankingReport {
+        require(consistencyCheckRate in 0.0..1.0) { "Consistency-check rate must be between 0 and 1" }
         val books = catalog.filter { it.enabled }.sortedBy { it.id }
         val ids = books.map { it.id }
         val byId = ids.withIndex().associate { it.value to it.index }
@@ -243,7 +254,6 @@ object DuelEngine {
             adjacent * ((n - components).toDouble() / (n - 1).toDouble())
         }
 
-        val activeDecisionCount = comparisons.size + jokerCount
         val hasSeenPair = pairs.values.any { it.votes + it.jokers > 0 }
         val hasUnseenPair = (0 until n).any { a ->
             (a + 1 until n).any { b ->
@@ -251,12 +261,13 @@ object DuelEngine {
                 stats == null || stats.votes + stats.jokers == 0
             }
         }
-        // One scheduled proposal out of twenty is reserved for checking the
-        // reader's consistency. Outside that lane, unseen pairs are preferred
-        // exclusively while any remain, so repeats cannot silently dominate.
-        val scheduledConsistencyCheck = hasSeenPair &&
-            (activeDecisionCount + 1) % CONSISTENCY_CHECK_INTERVAL == 0
-        val consistencyCheck = hasSeenPair && (scheduledConsistencyCheck || !hasUnseenPair)
+        // Each proposal independently enters the hidden consistency lane. The
+        // Android caller supplies entropy keyed by a private random install
+        // secret, so the occurrence is stable for one proposal state but is
+        // neither periodic nor inferable from the visible vote count.
+        val random = Random(selectionEntropy)
+        val sampledConsistencyCheck = hasSeenPair && random.nextDouble() < consistencyCheckRate
+        val consistencyCheck = hasSeenPair && (sampledConsistencyCheck || !hasUnseenPair)
 
         var duel: Duel? = null
         var bestScore = Double.NEGATIVE_INFINITY
@@ -274,7 +285,7 @@ object DuelEngine {
                     (if (appearances[b] == 0) 0.2 else 0.0)
                 // Stable deterministic tie breaking across restarts. Changing the
                 // revision rotates ties; no random choice stored only in memory.
-                val tie = (((books[a].id + ":" + books[b].id).hashCode().toLong() xor revision)
+                val tie = (((books[a].id + ":" + books[b].id).hashCode().toLong() xor selectionEntropy)
                     .and(0xffffL)).toDouble() / 65535.0
                 val score = if (consistencyCheck) {
                     val modelUncertainty = 4.0 * uncertainty
@@ -308,13 +319,19 @@ object DuelEngine {
                     val showAFirst = when {
                         stats.shownAFirst < stats.shownBFirst -> true
                         stats.shownAFirst > stats.shownBFirst -> false
-                        else -> (((books[a].id + ":" + books[b].id).hashCode().toLong() xor revision)
+                        else -> (((books[a].id + ":" + books[b].id).hashCode().toLong() xor selectionEntropy)
                             .and(1L)) == 0L
                     }
                     duel = if (showAFirst) Duel(books[a], books[b]) else Duel(books[b], books[a])
                 }
             }
         }
+
+        val repeatedPairStats = pairs.values.filter { it.votes >= 2 }
+        val repeatedPreferenceVotes = repeatedPairStats.sumOf { it.votes - 1 }
+        val repeatedVotesTotal = repeatedPairStats.sumOf { it.votes }
+        val pairwiseConsistency = if (repeatedVotesTotal == 0) null else
+            repeatedPairStats.sumOf { max(it.winsA, it.winsB) }.toDouble() / repeatedVotesTotal
 
         return RankingReport(
             books = ranked,
@@ -327,6 +344,9 @@ object DuelEngine {
             connectedComponents = components,
             cycleEdgesSkipped = skipped,
             isConsistencyCheck = consistencyCheck && duel != null,
+            repeatedVotePairs = repeatedPairStats.size,
+            repeatedPreferenceVotes = repeatedPreferenceVotes,
+            pairwiseConsistency = pairwiseConsistency,
             adjacentStability = stability,
             directCondorcetWinner = directWinner,
         )

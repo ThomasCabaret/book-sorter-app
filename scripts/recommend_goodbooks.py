@@ -14,7 +14,9 @@ import heapq
 import json
 import math
 import pathlib
+import re
 import sys
+import unicodedata
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
@@ -37,6 +39,7 @@ class BookMeta:
     work_id: int | None
     isbn13: str | None
     title: str
+    original_title: str
     authors: str
     average_rating: float
 
@@ -65,6 +68,12 @@ def normalize_isbn13(raw: str | None) -> str | None:
     except InvalidOperation:
         return None
     return candidate if valid_isbn13(candidate) else None
+
+
+def normalize_text(value: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", value.casefold())
+    without_marks = "".join(character for character in decomposed if not unicodedata.combining(character))
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", without_marks).split())
 
 
 def logistic(value: float) -> float:
@@ -111,9 +120,13 @@ def fit_bradley_terry(book_ids: list[str], pairs: list[dict]) -> dict[str, float
     return dict(zip(ordered, theta))
 
 
-def load_books(path: pathlib.Path) -> tuple[dict[int, BookMeta], dict[str, list[int]]]:
+def load_books(path: pathlib.Path) -> tuple[
+    dict[int, BookMeta], dict[str, list[int]], dict[tuple[str, str], list[int]], dict[int, list[int]]
+]:
     books = {}
     by_isbn = collections.defaultdict(list)
+    by_title_author = collections.defaultdict(list)
+    by_work = collections.defaultdict(list)
     with path.open("r", encoding="utf-8-sig", newline="") as source:
         reader = csv.DictReader(source)
         required = {"book_id", "goodreads_book_id", "work_id", "isbn13", "title", "authors"}
@@ -128,13 +141,35 @@ def load_books(path: pathlib.Path) -> tuple[dict[int, BookMeta], dict[str, list[
                 work_id=int(row["work_id"]) if row.get("work_id") else None,
                 isbn13=isbn13,
                 title=row["title"].strip(),
+                original_title=(row.get("original_title") or "").strip(),
                 authors=row["authors"].strip(),
                 average_rating=float(row.get("average_rating") or 0.0),
             )
             books[book_id] = meta
             if isbn13:
                 by_isbn[isbn13].append(book_id)
-    return books, dict(by_isbn)
+            author_key = normalize_text(meta.authors)
+            for candidate_title in {meta.title, meta.original_title} - {""}:
+                by_title_author[(normalize_text(candidate_title), author_key)].append(book_id)
+            if meta.work_id is not None:
+                by_work[meta.work_id].append(book_id)
+    return books, dict(by_isbn), dict(by_title_author), dict(by_work)
+
+
+def load_work_aliases(path: pathlib.Path) -> dict[str, int]:
+    aliases = {}
+    with path.open("r", encoding="utf-8-sig", newline="") as source:
+        reader = csv.DictReader(source)
+        required = {"bookduels_book_id", "goodreads_work_id"}
+        if not reader.fieldnames or not required.issubset(reader.fieldnames):
+            raise ValueError(f"work-alias CSV missing columns: {sorted(required - set(reader.fieldnames or []))}")
+        for row in reader:
+            book_id = row["bookduels_book_id"].strip()
+            work_id = int(row["goodreads_work_id"])
+            if not book_id or book_id in aliases:
+                raise ValueError("Duplicate or empty BookDuels ID in work-alias CSV")
+            aliases[book_id] = work_id
+    return aliases
 
 
 def load_genre_goodreads_ids(
@@ -159,16 +194,31 @@ def map_catalog(
     catalog: list[dict],
     local_scores: dict[str, float],
     isbn_to_dataset_ids: dict[str, list[int]],
+    title_author_to_dataset_ids: dict[tuple[str, str], list[int]] | None = None,
+    work_to_dataset_ids: dict[int, list[int]] | None = None,
+    explicit_work_aliases: dict[str, int] | None = None,
 ) -> tuple[dict[int, float], set[int], list[str]]:
     dataset_scores = {}
     catalog_dataset_ids = set()
     ambiguous = []
     dataset_owners = {}
+    title_author_to_dataset_ids = title_author_to_dataset_ids or {}
+    work_to_dataset_ids = work_to_dataset_ids or {}
+    explicit_work_aliases = explicit_work_aliases or {}
     for book in catalog:
         aliases = set(book.get("isbnAliases", []))
         if book.get("isbn13"):
             aliases.add(book["isbn13"])
-        matches = {dataset_id for isbn in aliases for dataset_id in isbn_to_dataset_ids.get(isbn, [])}
+        explicit_work_id = explicit_work_aliases.get(book["id"])
+        if explicit_work_id is not None:
+            matches = set(work_to_dataset_ids.get(explicit_work_id, []))
+        else:
+            matches = {dataset_id for isbn in aliases for dataset_id in isbn_to_dataset_ids.get(isbn, [])}
+            if not matches:
+                title_author_key = (normalize_text(book["title"]), normalize_text(book["author"]))
+                title_matches = title_author_to_dataset_ids.get(title_author_key, [])
+                if len(title_matches) == 1:
+                    matches = set(title_matches)
         catalog_dataset_ids.update(matches)
         if len(matches) > 1:
             ambiguous.append(book["id"])
@@ -216,6 +266,7 @@ def find_neighbors(
     local_scores: dict[int, float],
     neighbor_count: int,
     min_overlap: int,
+    min_reader_ratings: int = 25,
 ) -> tuple[dict[int, float], dict[int, float], int]:
     profiles = collections.defaultdict(list)
     totals = collections.defaultdict(lambda: [0.0, 0])
@@ -233,6 +284,8 @@ def find_neighbors(
     heap = []
     eligible = 0
     for user_id, profile in profiles.items():
+        if totals[user_id][1] < min_reader_ratings:
+            continue
         if len({book_id for book_id, _ in profile}) < min_overlap:
             continue
         similarity, comparable = order_similarity(profile, local_scores)
@@ -309,8 +362,11 @@ def build_report(args: argparse.Namespace) -> dict:
     pairs = active_pairwise(bases, active)
     enabled_ids = [book["id"] for book in catalog if book.get("enabled", True)]
     local_scores = fit_bradley_terry(enabled_ids, pairs)
-    books, by_isbn = load_books(args.books)
-    dataset_scores, excluded_ids, ambiguous = map_catalog(catalog, local_scores, by_isbn)
+    books, by_isbn, by_title_author, by_work = load_books(args.books)
+    explicit_work_aliases = load_work_aliases(args.work_aliases) if args.work_aliases else {}
+    dataset_scores, excluded_ids, ambiguous = map_catalog(
+        catalog, local_scores, by_isbn, by_title_author, by_work, explicit_work_aliases
+    )
     if len(dataset_scores) < args.min_overlap:
         raise ValueError(
             f"Only {len(dataset_scores)} active catalog books matched exact ISBN-13; "
@@ -322,7 +378,7 @@ def build_report(args: argparse.Namespace) -> dict:
             raise ValueError("--tags and --book-tags must be supplied together")
         genre_ids = load_genre_goodreads_ids(args.tags, args.book_tags, DEFAULT_GENRE_TAGS)
     similarities, user_means, eligible = find_neighbors(
-        args.ratings, dataset_scores, args.neighbors, args.min_overlap
+        args.ratings, dataset_scores, args.neighbors, args.min_overlap, args.min_reader_ratings
     )
     recommendations = collect_recommendations(
         args.ratings, books, similarities, user_means, excluded_ids, genre_ids,
@@ -337,6 +393,7 @@ def build_report(args: argparse.Namespace) -> dict:
         "matchedCatalogBooksExcluded": len(excluded_ids),
         "ambiguousCatalogBookIds": ambiguous,
         "eligibleSimilarReaders": eligible,
+        "minimumReaderRatings": args.min_reader_ratings,
         "selectedNeighbors": len(similarities),
         "recommendations": recommendations,
     }
@@ -349,14 +406,23 @@ def main() -> int:
     parser.add_argument("--ratings", required=True, type=pathlib.Path, help="goodbooks-10k ratings.csv")
     parser.add_argument("--tags", type=pathlib.Path, help="Optional goodbooks-10k tags.csv")
     parser.add_argument("--book-tags", type=pathlib.Path, help="Optional goodbooks-10k book_tags.csv")
+    parser.add_argument(
+        "--work-aliases", type=pathlib.Path,
+        help="Optional CSV: bookduels_book_id,goodreads_work_id for curated edition/work matches",
+    )
     parser.add_argument("--neighbors", type=int, default=200, help="Maximum similar readers (default: 200)")
     parser.add_argument("--min-overlap", type=int, default=4, help="Minimum exactly matched books per reader")
+    parser.add_argument(
+        "--min-reader-ratings", type=int, default=25,
+        help="Discard external readers with fewer ratings (default: 25)",
+    )
     parser.add_argument("--min-support", type=int, default=2, help="Minimum selected-neighbor ratings per result")
     parser.add_argument("--limit", type=int, default=50, help="Maximum recommendations")
     parser.add_argument("--output", required=True, type=pathlib.Path, help="Compact output JSON")
     args = parser.parse_args()
     try:
-        if args.neighbors < 1 or args.min_overlap < 2 or args.min_support < 1 or args.limit < 1:
+        if (args.neighbors < 1 or args.min_overlap < 2 or args.min_reader_ratings < 1
+                or args.min_support < 1 or args.limit < 1):
             raise ValueError("Numeric limits are out of range")
         report = build_report(args)
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

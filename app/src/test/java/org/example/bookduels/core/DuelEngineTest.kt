@@ -87,16 +87,18 @@ class DuelEngineTest {
     @Test fun ordinaryLaneUsesAnUnseenPairInsteadOfRepeating() {
         val events = repeatedVotes(1, 18, "a", "b") { "a" }
 
-        val report = DuelEngine.analyze(books, events, 18)
+        val report = DuelEngine.analyze(books, events, 18, consistencyCheckRate = 0.0)
 
         assertTrue(!report.isConsistencyCheck)
         assertNotEquals(setOf("a", "b"), setOf(report.duel?.first?.id, report.duel?.second?.id))
     }
 
-    @Test fun twentiethProposalRechecksAPreviouslySeenPair() {
-        val events = repeatedVotes(1, 19, "a", "b") { "a" }
+    @Test fun configuredConsistencyLaneRechecksAPreviouslySeenPair() {
+        val events = repeatedVotes(1, 7, "a", "b") { "a" }
 
-        val report = DuelEngine.analyze(books, events, 19)
+        val report = DuelEngine.analyze(
+            books, events, 7, consistencyCheckRate = 1.0, selectionEntropy = 42
+        )
 
         assertTrue(report.isConsistencyCheck)
         assertEquals(setOf("a", "b"), setOf(report.duel?.first?.id, report.duel?.second?.id))
@@ -109,9 +111,28 @@ class DuelEngineTest {
             if (offset < 5) "c" else "d"
         }
 
-        val report = DuelEngine.analyze(fourBooks, obvious + conflicted, 19)
+        val report = DuelEngine.analyze(
+            fourBooks, obvious + conflicted, 19,
+            consistencyCheckRate = 1.0,
+            selectionEntropy = 42,
+        )
 
         assertTrue(report.isConsistencyCheck)
         assertEquals(setOf("c", "d"), setOf(report.duel?.first?.id, report.duel?.second?.id))
+    }
+
+    @Test fun repeatedVotesProduceAggregateConsistencyStatistics() {
+        val events = listOf(
+            vote(1, "a", "b", "a"),
+            vote(2, "a", "b", "a"),
+            vote(3, "a", "b", "b"),
+            vote(4, "a", "c", "a"),
+        )
+
+        val report = DuelEngine.analyze(books, events, 4, consistencyCheckRate = 0.0)
+
+        assertEquals(1, report.repeatedVotePairs)
+        assertEquals(2, report.repeatedPreferenceVotes)
+        assertEquals(2.0 / 3.0, report.pairwiseConsistency!!, 1e-9)
     }
 }
