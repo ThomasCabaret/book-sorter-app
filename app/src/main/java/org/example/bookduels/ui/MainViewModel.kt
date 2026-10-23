@@ -84,7 +84,8 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
                 val second = byId[previous.second.id]
                 if (first?.enabled == true && second?.enabled == true) Duel(first, second) else null
             }
-            val report = if (restoredDuel == null) analyzed else analyzed.copy(duel = restoredDuel)
+            val report = if (restoredDuel == null) analyzed else
+                analyzed.copy(duel = restoredDuel, isConsistencyCheck = false)
             AppUiState(
                 loading = false, catalog = catalog, report = report, history = replay.history,
                 revision = replay.lastSequence, restorableCount = replay.restorableCount,

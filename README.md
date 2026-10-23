@@ -1,14 +1,15 @@
-# BookDuels v0.5 — Offline-first Android app (Pixel 7a)
+# BookDuels v0.6 — Offline-first Android app (Pixel 7a)
 
 An Android app for a single reader. Compare any two read books with an
 independent horizontal swipe on either the upper or lower book card. The card
 swiped left **or** right is the preferred book. A separate Joker action means
 "decline to choose" and does not introduce a tie or a preference vote.
 
-This is a **source project**, not a release APK. The v0.5 JVM tests, Python
+This is a **source project**, not a release APK. The v0.6 JVM tests, Python
 exchange tests, debug APK build, and lint pass with Android SDK/API 37. The
-preceding v0.4 build passed a Pixel 7a smoke test; this v0.5 set-aside flow and
-database migration still need their on-device upgrade check.
+v0.5 set-aside/database migration was installed on the Pixel 7a without losing
+the existing event log. The new v0.6 consistency-check flow still needs its
+short on-device interaction check when the phone is next connected.
 
 ## Features
 
@@ -33,8 +34,13 @@ database migration still need their on-device upgrade check.
   cards expose the same quick set-aside action.
 - Ranked Pairs (Tideman) over observed majority edges with a regularized
   Bradley-Terry estimate for unconstrained ranking and pair acquisition.
-  Repeated jokers reduce a pair's chance of appearing. Metrics are heuristics,
-  **not calibrated confidence probabilities**.
+  While unseen pairs remain, one proposal in twenty deliberately rechecks a
+  seen pair selected from model uncertainty, conflicting answers, cycle
+  tension and a cubic penalty for repeated Jokers. Metrics are heuristics,
+  **not calibrated confidence probabilities or psychological measurements**.
+- An offline desktop recommender can compare the pairwise order with similar
+  readers from a locally downloaded goodbooks-10k dataset and produce a small
+  JSON report. Third-party raw ratings are never bundled in the APK or Git.
 - SQLite **append-only** vote/joker/invalidation/reinstatement event log.
   Historical rollback/reinstatement remains gated by an explicit confirmation
   AND secure device authentication (strong biometric or screen-lock credential).
@@ -62,6 +68,7 @@ offline app use except on-demand cover images).
 ./scripts/test-core.sh
 ./scripts/test-archive.sh
 python3 scripts/test_bundle.py
+python3 scripts/test_recommender.py
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -143,6 +150,9 @@ the exact original CSV reports 0 new books (as expected).
   Joker follows the same fast flow. **Mettre de côté** removes either displayed
   book from upcoming duels and the ranking without deleting its history. No
   decision is saved for just opening a duel.
+  Approximately every twentieth proposal is labelled **Vérification de
+  cohérence** and revisits a non-trivial previously seen pair; ordinary
+  proposals remain unseen pairs while any are available.
 - **Classement**: provisional Ranked Pairs order, total votes, jokers,
   comparison coverage, graph components, skipped cyclic edges, uncertain
   Bradley-Terry proxy; a strict direct Condorcet winner is shown only when
@@ -197,6 +207,21 @@ author formatting can remain distinct works unless manually reconciled in a
 future version. This avoids silently merging two actually different books.
 The UI presently has no work-merging, title editing, or manual cover-URL
 editing function.
+
+## Offline recommendations
+
+The optional desktop prototype is documented in
+[`docs/RECOMMENDER.md`](docs/RECOMMENDER.md). It validates a portable export,
+matches exact ISBN-13 aliases, finds external readers whose relative ordering
+agrees with the BookDuels order, and ranks books favored by those neighbors.
+Goodbooks-10k is the first supported source because its 10,000 work-level
+records and six million ratings are manageable on a PC and cover fantasy/SF
+through tags. Raw CSV files and generated personal reports are ignored.
+
+There is intentionally no on-device recommendation import yet. A later phone
+extension should use only a compact, attributed derivative after its data
+format, preview and merge rules have been reviewed; external ratings must never
+be converted into historical duel events.
 
 ## Cover policy
 

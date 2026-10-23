@@ -17,7 +17,13 @@ private data class PairKey(val a: String, val b: String) {
     }
 }
 
-private data class MajorityEdge(val winner: Int, val loser: Int, val margin: Int, val totalVotes: Int)
+private data class MajorityEdge(
+    val winner: Int,
+    val loser: Int,
+    val margin: Int,
+    val totalVotes: Int,
+    val pair: PairKey,
+)
 
 private data class PairStats(
     var winsA: Int = 0,
@@ -46,6 +52,8 @@ data class RankingReport(
     val involvedBooks: Int,
     val connectedComponents: Int,
     val cycleEdgesSkipped: Int,
+    /** True when the proposed duel deliberately rechecks a previously seen pair. */
+    val isConsistencyCheck: Boolean,
     /** Heuristic score, not a calibrated posterior probability. */
     val adjacentStability: Double,
     /** Strict majority winner from observed direct comparisons with every other book, if any. */
@@ -61,6 +69,7 @@ data class RankingReport(
  */
 object DuelEngine {
     private const val PRIOR_PRECISION = 1.5
+    private const val CONSISTENCY_CHECK_INTERVAL = 20
 
     fun analyze(catalog: List<Book>, activeEvents: List<VoteEvent>, revision: Long): RankingReport {
         val books = catalog.filter { it.enabled }.sortedBy { it.id }
@@ -140,7 +149,13 @@ object DuelEngine {
             if (margin == 0) emptyList() else {
                 val winnerId = if (stats.winsA > stats.winsB) key.a else key.b
                 val loserId = if (winnerId == key.a) key.b else key.a
-                listOf(MajorityEdge(byId.getValue(winnerId), byId.getValue(loserId), margin, stats.votes))
+                listOf(MajorityEdge(
+                    byId.getValue(winnerId),
+                    byId.getValue(loserId),
+                    margin,
+                    stats.votes,
+                    key,
+                ))
             }
         }.sortedWith(compareByDescending<MajorityEdge> { it.margin }
             .thenByDescending { it.totalVotes }
@@ -161,8 +176,12 @@ object DuelEngine {
             return false
         }
         var skipped = 0
+        val cycleRejectedPairs = mutableSetOf<PairKey>()
         for (edge in majorityEdges) {
-            if (reaches(edge.loser, edge.winner)) skipped++
+            if (reaches(edge.loser, edge.winner)) {
+                skipped++
+                cycleRejectedPairs.add(edge.pair)
+            }
             else locked[edge.winner].add(edge.loser)
         }
         val indegree = IntArray(n)
@@ -224,26 +243,66 @@ object DuelEngine {
             adjacent * ((n - components).toDouble() / (n - 1).toDouble())
         }
 
+        val activeDecisionCount = comparisons.size + jokerCount
+        val hasSeenPair = pairs.values.any { it.votes + it.jokers > 0 }
+        val hasUnseenPair = (0 until n).any { a ->
+            (a + 1 until n).any { b ->
+                val stats = pairs[PairKey.of(books[a].id, books[b].id)]
+                stats == null || stats.votes + stats.jokers == 0
+            }
+        }
+        // One scheduled proposal out of twenty is reserved for checking the
+        // reader's consistency. Outside that lane, unseen pairs are preferred
+        // exclusively while any remain, so repeats cannot silently dominate.
+        val scheduledConsistencyCheck = hasSeenPair &&
+            (activeDecisionCount + 1) % CONSISTENCY_CHECK_INTERVAL == 0
+        val consistencyCheck = hasSeenPair && (scheduledConsistencyCheck || !hasUnseenPair)
+
         var duel: Duel? = null
         var bestScore = Double.NEGATIVE_INFINITY
         for (a in 0 until n) {
             for (b in a + 1 until n) {
-                val stats = pairs[PairKey.of(books[a].id, books[b].id)] ?: PairStats()
+                val key = PairKey.of(books[a].id, books[b].id)
+                val stats = pairs[key] ?: PairStats()
+                val shown = stats.votes + stats.jokers
+                if (consistencyCheck && shown == 0) continue
+                if (!consistencyCheck && hasUnseenPair && shown > 0) continue
                 val p = logistic(theta[a] - theta[b])
                 val uncertainty = p * (1.0 - p)
                 val approxGain = 0.5 * ln(1.0 + uncertainty * (std[a] * std[a] + std[b] * std[b]))
-                // Multiple jokers suppress recurrence sharply, without permanently
-                // forbidding a pair. Previously compared pairs are downweighted.
-                val jokerFactor = 1.0 / ((stats.jokers + 1.0) * (stats.jokers + 1.0) * (stats.jokers + 1.0))
-                val repeatFactor = 1.0 / sqrt(1.0 + stats.votes.toDouble())
                 val connectivityBonus = 1.0 + (if (appearances[a] == 0) 0.2 else 0.0) +
                     (if (appearances[b] == 0) 0.2 else 0.0)
                 // Stable deterministic tie breaking across restarts. Changing the
                 // revision rotates ties; no random choice stored only in memory.
                 val tie = (((books[a].id + ":" + books[b].id).hashCode().toLong() xor revision)
                     .and(0xffffL)).toDouble() / 65535.0
-                val score = approxGain * jokerFactor * repeatFactor * connectivityBonus *
-                    (1.0 + tie * 0.0001)
+                val score = if (consistencyCheck) {
+                    val modelUncertainty = 4.0 * uncertainty
+                    val observedDisagreement = if (stats.votes == 0) 0.0 else
+                        4.0 * stats.winsA.toDouble() * stats.winsB.toDouble() /
+                            (stats.votes.toDouble() * stats.votes.toDouble())
+                    val directModelConflict = when {
+                        stats.winsA > stats.winsB && p < 0.5 -> 2.0 * (0.5 - p)
+                        stats.winsB > stats.winsA && p > 0.5 -> 2.0 * (p - 0.5)
+                        else -> 0.0
+                    }
+                    val tension = max(
+                        if (key in cycleRejectedPairs) 1.0 else 0.0,
+                        directModelConflict,
+                    )
+                    val evidencePenalty = sqrt(shown.toDouble().coerceAtLeast(1.0))
+                    val jokerFactor = 1.0 / ((stats.jokers + 1.0) *
+                        (stats.jokers + 1.0) * (stats.jokers + 1.0))
+                    (0.45 * modelUncertainty + 0.30 * tension +
+                        0.25 * observedDisagreement) * jokerFactor /
+                        evidencePenalty * (1.0 + tie * 0.0001)
+                } else {
+                    // Joker-only pairs remain possible after other unseen pairs
+                    // are exhausted, but the cubic penalty makes them rare.
+                    val jokerFactor = 1.0 / ((stats.jokers + 1.0) *
+                        (stats.jokers + 1.0) * (stats.jokers + 1.0))
+                    approxGain * jokerFactor * connectivityBonus * (1.0 + tie * 0.0001)
+                }
                 if (score > bestScore) {
                     bestScore = score
                     val showAFirst = when {
@@ -267,6 +326,7 @@ object DuelEngine {
             involvedBooks = appearances.count { it > 0 },
             connectedComponents = components,
             cycleEdgesSkipped = skipped,
+            isConsistencyCheck = consistencyCheck && duel != null,
             adjacentStability = stability,
             directCondorcetWinner = directWinner,
         )

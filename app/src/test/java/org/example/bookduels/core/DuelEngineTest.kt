@@ -12,6 +12,16 @@ class DuelEngineTest {
     private fun vote(n: Long, first: String, second: String, chosen: String): VoteEvent =
         VoteEvent(n, "id-$n", n, EventKind.VOTE, first, second, chosen)
 
+    private fun repeatedVotes(
+        start: Long,
+        count: Int,
+        first: String,
+        second: String,
+        chosen: (Int) -> String,
+    ): List<VoteEvent> = (0 until count).map { offset ->
+        vote(start + offset, first, second, chosen(offset))
+    }
+
     @Test fun directCondorcetWinnerMustTopRankedPairs() {
         val votes = listOf(vote(1,"a","b","a"),vote(2,"a","c","a"),vote(3,"b","c","b"))
         val report = DuelEngine.analyze(books, votes, 3)
@@ -72,5 +82,36 @@ class DuelEngineTest {
         val restored = DuelEngine.analyze(books, historicalVotes, 2)
         assertEquals(3, restored.books.size)
         assertEquals(2, restored.votes)
+    }
+
+    @Test fun ordinaryLaneUsesAnUnseenPairInsteadOfRepeating() {
+        val events = repeatedVotes(1, 18, "a", "b") { "a" }
+
+        val report = DuelEngine.analyze(books, events, 18)
+
+        assertTrue(!report.isConsistencyCheck)
+        assertNotEquals(setOf("a", "b"), setOf(report.duel?.first?.id, report.duel?.second?.id))
+    }
+
+    @Test fun twentiethProposalRechecksAPreviouslySeenPair() {
+        val events = repeatedVotes(1, 19, "a", "b") { "a" }
+
+        val report = DuelEngine.analyze(books, events, 19)
+
+        assertTrue(report.isConsistencyCheck)
+        assertEquals(setOf("a", "b"), setOf(report.duel?.first?.id, report.duel?.second?.id))
+    }
+
+    @Test fun consistencyLanePrefersConflictedPairOverTrivialPair() {
+        val fourBooks = books + Book("d", "D", "X")
+        val obvious = repeatedVotes(1, 10, "a", "b") { "a" }
+        val conflicted = repeatedVotes(11, 9, "c", "d") { offset ->
+            if (offset < 5) "c" else "d"
+        }
+
+        val report = DuelEngine.analyze(fourBooks, obvious + conflicted, 19)
+
+        assertTrue(report.isConsistencyCheck)
+        assertEquals(setOf("c", "d"), setOf(report.duel?.first?.id, report.duel?.second?.id))
     }
 }

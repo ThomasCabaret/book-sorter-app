@@ -132,6 +132,14 @@ private fun DuelScreen(
             "Glisse n'importe quelle jaquette à gauche OU à droite pour choisir ce livre.",
             style = MaterialTheme.typography.bodySmall,
         )
+        if (report.isConsistencyCheck) {
+            Text(
+                "Vérification de cohérence · paire déjà vue, choisie car elle reste incertaine ou en tension.",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.tertiary,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

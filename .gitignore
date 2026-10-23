@@ -12,6 +12,12 @@ captures/
 .externalNativeBuild/
 .cxx/
 .DS_Store
+__pycache__/
+*.py[cod]
 
 # Keep the source hand-off archive beside the working tree without committing it.
 /book-duels-android-v2.tar.gz
+
+# Third-party recommendation datasets and generated personal reports stay local.
+/data/goodbooks-10k/
+/recommendations*.json

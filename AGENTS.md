@@ -1,4 +1,4 @@
-# BookDuels v0.5 — instructions for coding agents
+# BookDuels v0.6 — instructions for coding agents
 
 ## Core objective
 
@@ -73,12 +73,18 @@ ranking/duels, not from the durable event log.
   calibrated posterior rank probabilities.
 - Never treat Joker as tie; aggregate repeated jokers and suppress proposals
   of that pair by the current cubic penalty.
+- While unseen pairs remain, reserve one proposal in twenty for a deliberate
+  consistency recheck. Select it from previously seen pairs using model
+  uncertainty, direct disagreement and Ranked Pairs cycle tension; repeated
+  Jokers remain cubically suppressed. This is a heuristic audit, not a
+  psychological measurement.
 
 ## Build and test
 
 - `./scripts/test-core.sh` pure Kotlin parser/ranking/replay tests.
 - `./scripts/test-archive.sh` produces tar.gz in Kotlin and opens in Python.
 - `python3 scripts/test_bundle.py` checks good and tampered desktop archives.
+- `python3 scripts/test_recommender.py` checks the offline recommendation core.
 - `python3 scripts/inspect_bundle.py samples/initial-catalog-example.tar.gz`
   verifies the shipped 155-book/zero-event example.
 - `./gradlew :app:assembleDebug`, JVM unit tests, and an initial Pixel 7a
