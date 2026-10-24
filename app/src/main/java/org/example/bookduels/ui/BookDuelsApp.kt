@@ -69,7 +69,8 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private enum class Tab(val label: String) {
-    DUELS("Duels"), RANKING("Classement"), LIBRARY("Livres"), HISTORY("Historique"), SETTINGS("Réglages")
+    DUELS("Duels"), RANKING("Classement"), RECOMMENDATIONS("À lire"),
+    LIBRARY("Livres"), HISTORY("Historique"), SETTINGS("Réglages")
 }
 
 @Composable
@@ -100,7 +101,7 @@ internal fun BookDuelsApp(
                         onClick = { tab = item },
                         icon = { Text(when (item) {
                             Tab.DUELS -> "↔"; Tab.RANKING -> "≡"; Tab.LIBRARY -> "+"
-                            Tab.HISTORY -> "◷"; Tab.SETTINGS -> "⚙"
+                            Tab.RECOMMENDATIONS -> "✦"; Tab.HISTORY -> "◷"; Tab.SETTINGS -> "⚙"
                         }) },
                         label = { Text(item.label) },
                     )
@@ -114,10 +115,85 @@ internal fun BookDuelsApp(
                 state.error != null -> Text("Erreur de catalogue : ${state.error}", Modifier.padding(24.dp))
                 tab == Tab.DUELS -> DuelScreen(state, onDuelAction, onUndoLatestDecision, onToggleBook)
                 tab == Tab.RANKING -> RankingScreen(state.report!!)
+                tab == Tab.RECOMMENDATIONS -> RecommendationScreen(state)
                 tab == Tab.LIBRARY -> LibraryScreen(state, onImportCsv, onAddBook, onToggleBook)
                 tab == Tab.HISTORY -> HistoryScreen(state, onProtectedAction, onExport)
                 tab == Tab.SETTINGS -> SettingsScreen(state, onConsistencyCheckPercentChanged)
             }
+        }
+    }
+}
+
+@Composable
+private fun RecommendationScreen(state: AppUiState) {
+    val report = state.recommendations
+    LazyColumn(
+        Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        item {
+            Spacer(Modifier.height(12.dp))
+            Text("À découvrir", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(
+                "Calcul local à partir de tes duels et d'un modèle collaboratif précalculé. " +
+                    "Les titres externes sont souvent en anglais.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(8.dp))
+            when {
+                state.recommendationError != null -> Text(
+                    "Modèle indisponible : ${state.recommendationError}",
+                    color = MaterialTheme.colorScheme.error,
+                )
+                report == null -> LinearProgressIndicator(Modifier.fillMaxWidth())
+                report.mappedActiveVotes == 0 -> Text(
+                    "Il faut au moins un duel actif entre deux œuvres reliées au modèle.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                else -> {
+                    Text(
+                        "${report.mappedActiveVotes} votes exploitables · " +
+                            "${report.matchedCatalogBooks} livres reliés · " +
+                            "${report.eligibleCandidates} candidats",
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    Text(
+                        "La liste se recalcule après chaque vote. L'ordre est une prédiction statistique, " +
+                            "pas une probabilité calibrée ni une garantie.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
+        if (report != null && report.mappedActiveVotes > 0) {
+            itemsIndexed(report.books, key = { _, book -> book.datasetBookId }) { index, book ->
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text("${index + 1}.", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(book.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text(book.authors, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "Référence Goodbooks · ${book.datasetRatingCount} notes externes",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Modèle dérivé de goodbooks-10k v1.0 (CC BY-SA 4.0). " +
+                    "Aucune note externe n'est ajoutée aux duels.",
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Spacer(Modifier.height(12.dp))
         }
     }
 }

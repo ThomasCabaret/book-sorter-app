@@ -1,0 +1,9 @@
+bookduels_book_id,goodreads_work_id,evidence
+isbn:9782226435149,6163095,French split volume of Anathem; exclude the whole work from candidates but never train on this partial local record
+isbn:9782253260448,6163095,French split volume of Anathem; exclude the whole work from candidates but never train on this partial local record
+isbn:9782266111195,747250,French split volume of The Reality Dysfunction
+isbn:9782266130257,747250,French split volume of The Reality Dysfunction
+isbn:9782253151418,1742269,First French split volume of The Stand
+isbn:9782207303450,40575,The external record is the Shadow and Claw omnibus containing local works one and two
+isbn:9782290319055,33559,French volume contains At the Mountains of Madness plus The Shadow Out of Time
+isbn:9782290319055,17342821,French volume contains At the Mountains of Madness plus The Shadow Out of Time

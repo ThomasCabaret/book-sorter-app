@@ -17,6 +17,8 @@ import org.example.bookduels.core.Book
 import org.example.bookduels.core.Duel
 import org.example.bookduels.core.DuelEngine
 import org.example.bookduels.core.HistoryEntry
+import org.example.bookduels.core.RecommendationModel
+import org.example.bookduels.core.RecommendationReport
 import org.example.bookduels.core.RankingReport
 import org.example.bookduels.data.BookCatalog
 import org.example.bookduels.data.CatalogImportResult
@@ -44,6 +46,8 @@ internal data class AppUiState(
     val history: List<HistoryEntry> = emptyList(),
     val revision: Long = 0,
     val restorableCount: Int = 0,
+    val recommendations: RecommendationReport? = null,
+    val recommendationError: String? = null,
     val selectionFeedback: SelectionFeedback? = null,
     val quickUndoCount: Int = 0,
     val consistencyCheckPercent: Int = 5,
@@ -63,6 +67,9 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private val store = EventStore(application)
+    private val recommendationModel by lazy {
+        application.assets.open("recommendation-model.bin").use(RecommendationModel::read)
+    }
     private val settings = application.getSharedPreferences(SETTINGS_NAME, 0)
     private val proposalSecret = if (settings.contains(PROPOSAL_SECRET_KEY)) {
         settings.getLong(PROPOSAL_SECRET_KEY, 0L)
@@ -115,9 +122,14 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
             }
             val report = if (restoredDuel == null) analyzed else
                 analyzed.copy(duel = restoredDuel, isConsistencyCheck = false)
+            val recommendationResult = runCatching {
+                recommendationModel.recommend(catalog, replay.activeEvents)
+            }
             AppUiState(
                 loading = false, catalog = catalog, report = report, history = replay.history,
                 revision = replay.lastSequence, restorableCount = replay.restorableCount,
+                recommendations = recommendationResult.getOrNull(),
+                recommendationError = recommendationResult.exceptionOrNull()?.message,
                 quickUndoCount = undoCount, message = message,
                 consistencyCheckPercent = ratePercent,
             )

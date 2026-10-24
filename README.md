@@ -1,15 +1,15 @@
-# BookDuels v0.6 — Offline-first Android app (Pixel 7a)
+# BookDuels v0.7 — Offline-first Android app (Pixel 7a)
 
 An Android app for a single reader. Compare any two read books with an
 independent horizontal swipe on either the upper or lower book card. The card
 swiped left **or** right is the preferred book. A separate Joker action means
 "decline to choose" and does not introduce a tie or a preference vote.
 
-This is a **source project**, not a release APK. The v0.6 JVM tests, Python
-exchange tests, debug APK build, and lint pass with Android SDK/API 37. The
-v0.5 set-aside/database migration was installed on the Pixel 7a without losing
-the existing event log. The new v0.6 consistency-check flow still needs its
-short on-device interaction check when the phone is next connected.
+This is a **source project**, not a release APK. The v0.7 JVM tests, Python
+exchange/recommendation tests and debug APK build pass with Android SDK/API 37.
+The v0.6 consistency-check upgrade was installed and exercised on the Pixel 7a
+without changing any of its 467 existing event rows. The v0.7 on-device
+recommendation screen still needs its final install/performance smoke test.
 
 ## Features
 
@@ -40,9 +40,15 @@ short on-device interaction check when the phone is next connected.
   adjustable in Settings and the duel never reveals that it is a recheck.
   Metrics are heuristics,
   **not calibrated confidence probabilities or psychological measurements**.
-- An offline desktop recommender can compare the pairwise order with similar
-  readers from a locally downloaded goodbooks-10k dataset and produce a small
-  JSON report. Third-party raw ratings are never bundled in the APK or Git.
+- A fully local recommendation screen fits a 48-dimensional personal vector
+  from active mapped votes and rescoring after every journal revision. The APK
+  contains a 1.93 MB frozen Goodbooks-derived item model, never the six million
+  raw ratings or BookDuels votes. Candidate filtering excludes obvious
+  comics/omnibus noise, known split-edition works and unfamiliar late-series
+  volumes. Scores remain statistical ranking signals, not calibrated
+  probabilities.
+- The desktop reference recommender remains available for parity checks and
+  reproducible evaluation. It never converts external ratings into duels.
 - SQLite **append-only** vote/joker/invalidation/reinstatement event log.
   Historical rollback/reinstatement remains gated by an explicit confirmation
   AND secure device authentication (strong biometric or screen-lock credential).
@@ -74,6 +80,7 @@ python3 scripts/test_recommender.py
 python3 scripts/test_work_resolver.py
 python3 scripts/test_latent_recommender.py
 python3 scripts/test_latent_inference.py
+python3 scripts/test_android_recommender.py
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -137,6 +144,9 @@ build as release-ready, complete the remaining interaction checks:
 8. Installing this debug build with `adb install -r` preserves the database and
    applies the one-time saga curation; explicitly test direct v1-to-v3 and
    v2-to-v3 migration with retained fixtures before a release build.
+9. The **À lire** screen loads without network access, reports mapped-vote
+   coverage, agrees with `scripts/recommend_android_asset.py`, and recomputes
+   after a new vote without adding any external event to SQLite.
 
 On first launch the SQLite catalog gets seeded with 155 retained records: the
 152 original Babelio rows plus three explicitly curated whole novels. It is
@@ -240,10 +250,13 @@ held-out readers, the selected 48-dimensional model reaches 66.54% accuracy on
 compressed derivative is 5.40 MB. These are empirical ranking metrics, not a
 probability that a recommendation will be liked.
 
-There is intentionally no on-device recommendation import yet. A later phone
-extension should use only a compact, attributed derivative after its data
-format, preview and merge rules have been reviewed; external ratings must never
-be converted into historical duel events.
+The **À lire** tab now performs recommendation inference directly on the phone.
+It loads `recommendation-model.bin`, fits a small personal vector from active
+mapped votes, excludes every conservatively matched catalog work, and ranks a
+curated speculative-fiction candidate pool. Recalculation is local and follows
+the append-only event revision; no recommendation is imported into the event
+log. The embedded derivative is attributed under CC BY-SA 4.0 in
+`recommendation-NOTICE.txt`.
 
 ## Cover policy
 
@@ -368,6 +381,7 @@ app/src/main/java/org/example/bookduels/
   core/BabelioCsv.kt                      CSV parser and reference classification
   core/TarGzipWriter.kt                   Pure Kotlin USTAR/GZIP writer
   core/DuelEngine.kt                      Ranked Pairs, BT scores, acquisition
+  core/RecommendationEngine.kt            Compact model parser and local inference
   data/BookCatalog.kt                     Seed parsing
   data/EventStore.kt                      SQLite 3 schema, merging, curation, event log
   data/PortableArchive.kt                 Export schema and checksums
@@ -383,10 +397,19 @@ scripts/make_example_export.py            Demo export from seed (no votes)
 scripts/resolve_work_aliases.py            Cached ISBN/work identity resolver
 scripts/train_latent_recommender.py        Pairwise external-ratings model trainer
 scripts/recommend_latent.py                Personal-vector fit and latent recommendations
+scripts/build_android_recommender.py       Compact attributed Android-asset builder
+scripts/recommend_android_asset.py         Exact desktop reference for phone inference
+scripts/evaluate_android_recommender.py    Held-out phone/blend validation
+scripts/test_android_recommender.py        Android asset integrity/parser test
 config/goodbooks_work_aliases.csv          Reviewed French-to-Goodreads work links
+config/goodbooks_candidate_exclusions.csv  Known partial/omnibus candidate exclusions
+app/src/main/assets/recommendation-model.bin  Frozen factors and candidate metadata
+app/src/main/assets/recommendation-model.json Asset provenance and reproducibility manifest
+app/src/main/assets/recommendation-NOTICE.txt CC BY-SA source attribution
 samples/initial-catalog-example.tar.gz    Real standalone tarball with zero votes
 docs/EXCHANGE_FORMAT.md                   Schema for a future desktop companion
 docs/GOODBOOKS_MAPPING_AUDIT.md           Reviewed aliases and rejected near-matches
+docs/benchmarks/goodbooks-android-48d.json Exact phone-inference benchmark
 AGENTS.md                                 Codex implementation guardrails
 ```
 
@@ -400,5 +423,5 @@ AGENTS.md                                 Codex implementation guardrails
    explicit preview for uncertain multi-edition merges.
 4. Calibrated ranking uncertainty, benchmark pair selection, and decide whether
    Joker should be split into "not now" and "genuine indifference".
-5. Define and test the compact on-device recommendation asset and its French
-   UI without ever converting external ratings into duel-history events.
+5. Add explicit recommendation feedback only if it can remain separate from
+   duel history, and continue evaluating diversity/calibration on held-out data.

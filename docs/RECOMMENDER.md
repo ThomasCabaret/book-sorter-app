@@ -1,9 +1,9 @@
 # Offline recommendation prototype
 
-BookDuels v0.6 includes a desktop-only interpretable-neighbor prototype and a
-heavier pairwise latent-model trainer. Raw third-party ratings are never copied
-into the SQLite event log, a portable BookDuels export, or Git. Only a compact,
-attributed model derivative may later be reviewed for Android packaging.
+BookDuels v0.7 includes a desktop interpretable-neighbor prototype, a heavier
+pairwise latent-model trainer and compact on-device inference. Raw third-party
+ratings are never copied into the SQLite event log, a portable BookDuels export,
+the APK, or Git. The APK contains only an attributed item-model derivative.
 
 ## Dataset choice
 
@@ -35,10 +35,9 @@ Two larger sources were evaluated but are not the default:
   is a poorer first match for BookDuels' ISBN/work identity model.
 
 Goodbooks-10k is therefore the pragmatic first experiment. Embedding its raw
-ratings in an APK would waste space and battery. A future phone feature should
-consume only a reviewed compact derivative (for example, a small list of
-recommendations or quantized item factors) and include the attribution and
-share-alike notices required by the dataset license.
+ratings in an APK would waste space and battery. The phone feature consequently
+ships only the reviewed, quantized item-factor derivative and the attribution
+and share-alike notices required by the dataset license.
 
 ## Method
 
@@ -195,11 +194,59 @@ python scripts\train_latent_recommender.py `
   --manifest data\goodbooks-10k\models\pairwise-48d.manifest.json
 ```
 
-The artifact contains compact item factors and anonymous external-reader
-factors, not raw rating rows. Item factors provide the validated collaborative
-prediction; reader factors preserve a path for an explicit nearest-profile
-hybrid, but that second scoring layer must itself be evaluated before being
-claimed better or shipped. On-device integration is still pending.
+The desktop artifact contains compact item factors and anonymous
+external-reader factors, not raw rating rows. Item factors provide the
+validated collaborative prediction; reader factors preserve a path for an
+explicit nearest-profile hybrid, but that second scoring layer has not shown a
+validated improvement and is not shipped on Android.
+
+### Android asset and inference
+
+`scripts/build_android_recommender.py` removes the unused reader factors,
+encodes all 10,000 item vectors as binary float16 values, attaches conservative
+local-work aliases and marks a filtered candidate set. The resulting
+`app/src/main/assets/recommendation-model.bin` is 1,933,076 bytes and contains
+2,296 eligible genre candidates before catalog and series filtering. It does
+not contain personal data or raw rating rows. Its manifest and CC BY-SA notice
+are bundled beside it.
+
+For each event-log revision, Android:
+
+1. replays active events and ignores Jokers;
+2. keeps only votes whose two enabled works map unambiguously to model items;
+3. performs one full-batch AdamW personalization step from the zero vector;
+4. scores candidates with the personal component plus 0.1 of the learned
+   population bias;
+5. excludes catalog works, known unsafe split/omnibus identities, obvious
+   non-novel/omnibus candidates and late volumes of a series not represented in
+   the catalog.
+
+The 0.1 population weight was selected on 5,339 held-out readers and 330,882
+query pairs. The exact phone-style calculation reaches 65.915% pairwise
+accuracy and 0.6718 log-loss. Full population-bias weight reaches 63.979%
+accuracy in the same one-step evaluation; personal-only reaches 57.693%.
+These are ranking diagnostics, not probabilities of liking a book. The
+reproducible report is `docs/benchmarks/goodbooks-android-48d.json`.
+
+```powershell
+python scripts\evaluate_android_recommender.py `
+  --ratings data\goodbooks-10k\ratings.csv `
+  --model data\goodbooks-10k\models\pairwise-48d.npz `
+  --output docs\benchmarks\goodbooks-android-48d.json
+```
+
+```powershell
+python scripts\build_android_recommender.py `
+  --model data\goodbooks-10k\models\pairwise-48d.npz `
+  --books data\goodbooks-10k\books.csv `
+  --tags data\goodbooks-10k\tags.csv `
+  --book-tags data\goodbooks-10k\book_tags.csv `
+  --catalog app\src\main\assets\books.json `
+  --work-aliases data\goodbooks-10k\work_aliases.csv `
+  --candidate-exclusions config\goodbooks_candidate_exclusions.csv `
+  --output app\src\main\assets\recommendation-model.bin `
+  --manifest app\src\main\assets\recommendation-model.json
+```
 
 ### Personal inference from a verified export
 
@@ -228,10 +275,9 @@ validated score is the fixed-item-factor prediction from the personal vector.
 ## Size policy
 
 The 69 MB raw ratings file is acceptable on a desktop but is not needed on the
-phone. The validated factor derivative is about 5.4 MB and contains no raw
-rating rows. Candidate filtering can still use the conservative fantasy/SF tag
-set. Packaging, license attribution, Kotlin inference, and upgrade semantics
-must be reviewed before that derivative becomes an Android asset.
+phone. The desktop artifact is about 5.4 MB; the packaged item-only derivative
+is 1.93 MB. It is read-only app data, so upgrading the model cannot alter the
+SQLite catalog or append-only event history.
 
 Run its synthetic tests with:
 
@@ -240,8 +286,9 @@ python scripts\test_recommender.py
 python scripts\test_work_resolver.py
 python scripts\test_latent_recommender.py
 python scripts\test_latent_inference.py
+python scripts\test_android_recommender.py
 ```
 
-No Android importer is provided in v0.6. Adding one requires a separately
-reviewed format, preview and merge behavior; it must not mutate historical
-events or silently add external ratings as duels.
+No Android recommendation-report importer is needed: inference is local. There
+is still no Android history/archive importer; adding one requires a separately
+reviewed format, preview and merge behavior and protected confirmation.

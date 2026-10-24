@@ -1,0 +1,90 @@
+{
+  "format": "bookduels.android-recommender.v1",
+  "independentOfBookDuelsVotes": true,
+  "source": {
+    "name": "goodbooks-10k v1.0",
+    "url": "https://github.com/zygmuntz/goodbooks-10k",
+    "license": "CC BY-SA 4.0"
+  },
+  "modelSha256": "74fa5551952f898331e46cc34e5ba5cb50e0b2eaf5f57267a5cbc153f02f0fd4",
+  "assetSha256": "88dfdd76157fa09c5782281840993807c93d6eca70f41773755c71174a8cff19",
+  "assetBytes": 1933076,
+  "items": 10000,
+  "dimensions": 48,
+  "candidateItems": 2296,
+  "catalogAliases": 74,
+  "candidatePolicy": {
+    "positiveTags": [
+      "dark-fantasy",
+      "dystopia",
+      "dystopian",
+      "epic-fantasy",
+      "fantasy",
+      "fantasy-sci-fi",
+      "high-fantasy",
+      "horror",
+      "paranormal",
+      "sci-fi",
+      "science-fiction",
+      "science-fiction-and-fantasy",
+      "science-fiction-fantasy",
+      "speculative-fiction",
+      "urban-fantasy"
+    ],
+    "excludedTags": [
+      "art",
+      "biography",
+      "children",
+      "childrens",
+      "childrens-books",
+      "comic",
+      "comics",
+      "drama",
+      "graphic-novel",
+      "graphic-novels",
+      "history",
+      "manga",
+      "memoir",
+      "non-fiction",
+      "nonfiction",
+      "picture-book",
+      "picture-books",
+      "plays",
+      "poetry",
+      "sequential-art",
+      "superhero",
+      "superheroes",
+      "theatre"
+    ],
+    "excludedTagStrengthAtMostTwoPercentOfPositive": true,
+    "excludedTitleParts": [
+      " box set",
+      " boxset",
+      " boxed set",
+      " complete collection",
+      " complete edition",
+      " complete series",
+      " complete works",
+      " collected ",
+      " collection",
+      " omnibus",
+      " treasury",
+      " trilogy",
+      "ultimate hitchhiker"
+    ],
+    "excludeMultiVolumeSeriesRanges": true,
+    "knownCatalogWorkExclusions": [
+      33559,
+      40575,
+      747250,
+      1742269,
+      6163095,
+      17342821
+    ]
+  },
+  "phoneInference": {
+    "personalization": "one full-batch AdamW step from zero",
+    "personalizationLearningRate": 0.01,
+    "popularityBiasWeight": 0.1
+  }
+}

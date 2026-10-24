@@ -1,0 +1,46 @@
+{
+  "format": "bookduels.android-recommender-validation.v1",
+  "sourceRatingsSha256": "1ee8a97172bd6d97147a30d9cfb3029ac240bd27ba2aa9365981c051c65113f8",
+  "modelSha256": "74fa5551952f898331e46cc34e5ba5cb50e0b2eaf5f57267a5cbc153f02f0fd4",
+  "seed": 20261023,
+  "heldOutReaders": 5339,
+  "queryPairs": 330882,
+  "phonePersonalization": {
+    "dimensions": 48,
+    "supportPairsPerReader": 64,
+    "learningRate": 0.01,
+    "optimizer": "one full-batch AdamW step from zero"
+  },
+  "popularityWeightMetrics": {
+    "0.0": {
+      "pairwiseAccuracy": 0.5769307487261319,
+      "pairwiseLogLoss": 0.6876674689080146
+    },
+    "0.05": {
+      "pairwiseAccuracy": 0.6517852285709105,
+      "pairwiseLogLoss": 0.679397763273202
+    },
+    "0.1": {
+      "pairwiseAccuracy": 0.6591473697571945,
+      "pairwiseLogLoss": 0.6718165457990938
+    },
+    "0.15": {
+      "pairwiseAccuracy": 0.6565633670009248,
+      "pairwiseLogLoss": 0.6649194112724715
+    },
+    "0.25": {
+      "pairwiseAccuracy": 0.6509601610241718,
+      "pairwiseLogLoss": 0.6531459642987775
+    },
+    "0.5": {
+      "pairwiseAccuracy": 0.6442205982797493,
+      "pairwiseLogLoss": 0.6348941967626364
+    },
+    "1.0": {
+      "pairwiseAccuracy": 0.6397869935505709,
+      "pairwiseLogLoss": 0.6385208124542171
+    }
+  },
+  "selectedPopularityWeight": 0.1,
+  "selectionCriterion": "highest held-out pairwise accuracy among evaluated blends"
+}

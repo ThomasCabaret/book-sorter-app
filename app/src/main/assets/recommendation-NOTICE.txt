@@ -1,0 +1,18 @@
+BookDuels recommendation model notice
+=====================================
+
+The bundled recommendation asset is a transformed model derived from
+goodbooks-10k v1.0 by Zygmunt Zajac and contributors:
+https://github.com/zygmuntz/goodbooks-10k
+
+Source dataset license: Creative Commons Attribution-ShareAlike 4.0
+International (CC BY-SA 4.0):
+https://creativecommons.org/licenses/by-sa/4.0/
+
+The asset contains frozen item factors and bibliographic metadata. It does not
+contain BookDuels votes, raw goodbooks rating rows, or identifiable reader
+profiles. Personalization is computed locally from the app's active vote log.
+
+This statistical model reflects the limitations and selection biases of its
+source ratings. Its scores are not calibrated probabilities or guarantees that
+a reader will like a book.
