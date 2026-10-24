@@ -68,7 +68,7 @@ def series_info(title: str) -> tuple[str, float] | None:
 
 
 def build_report(
-    bundle: pathlib.Path, asset_path: pathlib.Path, limit: int, popularity_weight: float,
+    bundle: pathlib.Path, asset_path: pathlib.Path, limit: int, population_prior_weight: float,
 ) -> dict:
     catalog, _events, bases, active = read_bundle(bundle)
     pairs = active_pairwise(bases, active)
@@ -115,7 +115,7 @@ def build_report(
         info[0] for index in local_to_item.values()
         if (info := series_info(items[index]["title"])) is not None
     }
-    recommendations = []
+    eligible = []
     for index, item in enumerate(items):
         if not item["candidate"] or item["workId"] in catalog_works:
             continue
@@ -125,15 +125,24 @@ def build_report(
         if series is not None and series[1] > 1 and series[0] not in known_series:
             continue
         personal_score = float(factors[index] @ personal)
-        score = float(popularity_weight * item["bias"] + personal_score)
+        eligible.append((item, personal_score))
+    if not eligible:
+        raise ValueError("No eligible recommendation candidate")
+    mean_personal_score = float(np.mean([score for _item, score in eligible]))
+    recommendations = []
+    for item, personal_score in eligible:
+        if personal_score < mean_personal_score:
+            continue
+        score = float(population_prior_weight * item["bias"] + personal_score)
         recommendations.append({**item, "score": score, "personalScore": personal_score})
-    recommendations.sort(key=lambda item: (-item["score"], -item["ratingCount"], item["bookId"]))
+    recommendations.sort(key=lambda item: (-item["score"], item["bookId"]))
     return {
         "format": "bookduels.android-recommendations.v1",
         "matchedCatalogBooks": len(local_to_item),
         "mappedActiveVotes": mapped_votes,
         "eligibleCandidates": len(recommendations),
-        "popularityWeight": popularity_weight,
+        "personalAffinityFloor": mean_personal_score,
+        "populationPriorWeight": population_prior_weight,
         "recommendations": recommendations[:limit],
     }
 
@@ -143,13 +152,13 @@ def main() -> int:
     parser.add_argument("bundle", type=pathlib.Path)
     parser.add_argument("--asset", required=True, type=pathlib.Path)
     parser.add_argument("--limit", type=int, default=40)
-    parser.add_argument("--popularity-weight", type=float, default=0.1)
+    parser.add_argument("--population-prior-weight", type=float, default=0.1)
     parser.add_argument("--output", required=True, type=pathlib.Path)
     args = parser.parse_args()
     try:
-        if not 0 <= args.popularity_weight <= 1:
-            raise ValueError("Popularity weight must be between zero and one")
-        report = build_report(args.bundle, args.asset, args.limit, args.popularity_weight)
+        if not 0 <= args.population_prior_weight <= 1:
+            raise ValueError("Population-prior weight must be between zero and one")
+        report = build_report(args.bundle, args.asset, args.limit, args.population_prior_weight)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError, KeyError, struct.error, json.JSONDecodeError) as error:

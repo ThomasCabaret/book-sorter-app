@@ -91,6 +91,7 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
                 withContext(Dispatchers.IO) {
                     store.mergeBundled(BookCatalog.loadBundled(application))
                     store.applySagaCatalogCurationV1()
+                    store.applyCatalogMetadataCurationV2()
                 }
                 refresh()
             } catch (e: Exception) {

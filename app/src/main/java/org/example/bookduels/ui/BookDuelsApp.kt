@@ -162,6 +162,11 @@ private fun RecommendationScreen(state: AppUiState) {
                             "pas une probabilité calibrée ni une garantie.",
                         style = MaterialTheme.typography.bodySmall,
                     )
+                    Text(
+                        "Le nombre de notes externes n'entre pas dans l'ordre. Seuls les livres dont " +
+                            "l'affinité personnelle dépasse la moyenne du vivier sont conservés.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
             }
         }
@@ -177,10 +182,7 @@ private fun RecommendationScreen(state: AppUiState) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(book.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             Text(book.authors, style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                "Référence Goodbooks · ${book.datasetRatingCount} notes externes",
-                                style = MaterialTheme.typography.labelSmall,
-                            )
+                            Text("Référence Goodbooks", style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }

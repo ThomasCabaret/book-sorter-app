@@ -28,6 +28,9 @@ class AndroidRecommendationAssetTest(unittest.TestCase):
             manifest["candidateItems"], sum(item["candidate"] for item in asset["items"])
         )
         self.assertTrue(np.isfinite(asset["factors"]).all())
+        by_work = {item["workId"]: item for item in asset["items"]}
+        self.assertFalse(by_work[216334]["candidate"])
+        self.assertFalse(by_work[4873881]["candidate"])
 
 
 if __name__ == "__main__":

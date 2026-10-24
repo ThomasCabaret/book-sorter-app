@@ -3,6 +3,7 @@
 * text=auto
 
 *.bat text eol=crlf
+*.csv text eol=lf
 *.json text eol=lf
 *.kt text eol=lf
 *.kts text eol=lf

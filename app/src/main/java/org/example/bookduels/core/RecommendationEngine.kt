@@ -118,15 +118,27 @@ internal class RecommendationModel(
         val catalogIsbns = catalog.mapNotNull { it.isbn13 }.toSet()
         val catalogTitleAuthors = catalog.map { titleAuthorKey(it.title, it.author) }.toSet()
         val knownSeries = localToItem.values.mapNotNull { seriesInfo(items[it].title)?.first }.toSet()
-        val scored = items.asSequence().filter { item ->
+        val eligible = items.asSequence().filter { item ->
             val series = seriesInfo(item.title)
             item.candidate && item.workId !in catalogWorkIds &&
                 (item.isbn13 == null || item.isbn13 !in catalogIsbns) &&
                 titleAuthorKey(item.title, item.authors) !in catalogTitleAuthors &&
                 (series == null || series.second <= 1.0 || series.first in knownSeries)
         }.map { item ->
-            var score = POPULARITY_BIAS_WEIGHT * item.bias
-            for (dimension in 0 until dimensions) score += item.factors[dimension] * personal[dimension]
+            var personalScore = 0f
+            for (dimension in 0 until dimensions) {
+                personalScore += item.factors[dimension] * personal[dimension]
+            }
+            item to personalScore
+        }.toList()
+        if (eligible.isEmpty()) {
+            return RecommendationReport(emptyList(), localToItem.size, mappedVotes, 0)
+        }
+        val meanPersonalScore = eligible.map { it.second }.average().toFloat()
+        // A population prior may order plausible personal matches, but it may
+        // never rescue a candidate with below-average personal affinity.
+        val scored = eligible.asSequence().filter { it.second >= meanPersonalScore }.map { (item, personalScore) ->
+            val score = personalScore + POPULATION_PRIOR_WEIGHT * item.bias
             RecommendedBook(
                 datasetBookId = item.datasetBookId,
                 workId = item.workId,
@@ -140,7 +152,6 @@ internal class RecommendationModel(
         }.toList()
         val ordered = scored.sortedWith(
             compareByDescending<RecommendedBook> { it.score }
-                .thenByDescending { it.datasetRatingCount }
                 .thenBy { it.datasetBookId }
         )
         return RecommendationReport(
@@ -158,7 +169,7 @@ internal class RecommendationModel(
     companion object {
         private const val PERSONALIZATION_RATE = 0.01f
         private const val ADAM_EPSILON = 1e-8f
-        private const val POPULARITY_BIAS_WEIGHT = 0.1f
+        private const val POPULATION_PRIOR_WEIGHT = 0.1f
 
         fun read(source: InputStream): RecommendationModel {
             val input = DataInputStream(BufferedInputStream(source))

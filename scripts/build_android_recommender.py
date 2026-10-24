@@ -89,7 +89,7 @@ def load_candidate_exclusions(path: pathlib.Path, catalog_ids: set[str], work_id
         for row in reader:
             local_id = row["bookduels_book_id"].strip()
             work_id = int(row["goodreads_work_id"])
-            if local_id not in catalog_ids or work_id not in work_ids:
+            if (local_id and local_id not in catalog_ids) or work_id not in work_ids:
                 raise ValueError(f"Unknown candidate exclusion: {local_id} -> {work_id}")
             excluded.add(work_id)
     return excluded
@@ -182,11 +182,13 @@ def build(args: argparse.Namespace) -> dict:
         "phoneInference": {
             "personalization": "one full-batch AdamW step from zero",
             "personalizationLearningRate": 0.01,
-            "popularityBiasWeight": 0.1,
+            "populationPriorWeight": 0.1,
         },
     }
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
-    args.manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    args.manifest.write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
     return manifest
 
 

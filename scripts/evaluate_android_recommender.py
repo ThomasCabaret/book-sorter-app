@@ -38,6 +38,7 @@ def evaluate(args: argparse.Namespace) -> dict:
     model = load_model(args.model)
     factors = model["item_factors"].astype(np.float32)
     bias = model["item_bias"].astype(np.float32)
+    log_rating_count = np.log1p(model["item_rating_count"].astype(np.float64))
     gradient = np.zeros((len(validation.user_ids), factors.shape[1]), dtype=np.float32)
     margin = bias[support_winners] - bias[support_losers]
     # Once sampled, every preference is treated exactly like one BookDuels
@@ -58,7 +59,7 @@ def evaluate(args: argparse.Namespace) -> dict:
     bias_margin = bias[query_winners] - bias[query_losers]
     blends = {
         str(weight): pair_metrics(personal_margin + weight * bias_margin)
-        for weight in args.popularity_weights
+        for weight in args.population_prior_weights
     }
     return {
         "format": "bookduels.android-recommender-validation.v1",
@@ -73,9 +74,14 @@ def evaluate(args: argparse.Namespace) -> dict:
             "learningRate": args.learning_rate,
             "optimizer": "one full-batch AdamW step from zero",
         },
-        "popularityWeightMetrics": blends,
-        "selectedPopularityWeight": 0.1,
+        "populationPriorWeightMetrics": blends,
+        "selectedPopulationPriorWeight": 0.1,
         "selectionCriterion": "highest held-out pairwise accuracy among evaluated blends",
+        "popularityAudit": {
+            "ratingCountUsedInScoreOrTieBreak": False,
+            "itemBiasVsLogRatingCountPearson": float(np.corrcoef(bias, log_rating_count)[0, 1]),
+            "datasetSelectionIsPopularityBiased": True,
+        },
     }
 
 
@@ -92,7 +98,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--query-pairs", type=int, default=64)
     parser.add_argument("--learning-rate", type=float, default=0.01)
     parser.add_argument(
-        "--popularity-weights", type=float, nargs="+",
+        "--population-prior-weights", type=float, nargs="+",
         default=[0.0, 0.05, 0.1, 0.15, 0.25, 0.5, 1.0],
     )
     return parser.parse_args()
@@ -103,11 +109,13 @@ def main() -> int:
     try:
         report = evaluate(args)
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        args.output.write_text(
+            json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n"
+        )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
         print(f"Android recommendation validation failed: {error}")
         return 1
-    selected = report["popularityWeightMetrics"][str(report["selectedPopularityWeight"])]
+    selected = report["populationPriorWeightMetrics"][str(report["selectedPopulationPriorWeight"])]
     print(
         f"Held-out phone accuracy={selected['pairwiseAccuracy']:.4f}, "
         f"log-loss={selected['pairwiseLogLoss']:.4f}, pairs={report['queryPairs']:,}"

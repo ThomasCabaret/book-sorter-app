@@ -11,7 +11,7 @@
     "learningRate": 0.01,
     "optimizer": "one full-batch AdamW step from zero"
   },
-  "popularityWeightMetrics": {
+  "populationPriorWeightMetrics": {
     "0.0": {
       "pairwiseAccuracy": 0.5769307487261319,
       "pairwiseLogLoss": 0.6876674689080146
@@ -41,6 +41,11 @@
       "pairwiseLogLoss": 0.6385208124542171
     }
   },
-  "selectedPopularityWeight": 0.1,
-  "selectionCriterion": "highest held-out pairwise accuracy among evaluated blends"
+  "selectedPopulationPriorWeight": 0.1,
+  "selectionCriterion": "highest held-out pairwise accuracy among evaluated blends",
+  "popularityAudit": {
+    "ratingCountUsedInScoreOrTieBreak": false,
+    "itemBiasVsLogRatingCountPearson": 0.0436119770219006,
+    "datasetSelectionIsPopularityBiased": true
+  }
 }

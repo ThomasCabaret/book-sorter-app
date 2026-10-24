@@ -68,3 +68,19 @@ second work-level dataset with compatible redistribution terms or a reviewed
 model where each BookDuels record is first normalized to the intended whole
 work. A title-only match, a series match, or an edition that contains only part
 of the work is insufficient evidence.
+
+## Recommendation-only containment exclusions
+
+Work identity and recommendation exclusion are deliberately separate. A local
+collection must not be falsely aliased to one contained story for training,
+but that story also must not be recommended as unread. The reviewed candidate
+exclusion table therefore removes Goodbooks work 4,873,881 (*The Last
+Question*), which is contained in the local *Le robot qui rêvait* collection.
+It also removes work 216,334 (*Stories of Your Life and Others*) following the
+owner's explicit confirmation that it was already read despite being absent
+from the Babelio catalog. Neither rule creates a duel or a work alias.
+
+The local *Fictions* record maps to Borges's *Ficciones* (work 1,007,116).
+Goodbooks's *The Aleph and Other Stories* is a different collection (work
+2,707,897), so it is not automatically excluded as another edition of
+*Fictions*.

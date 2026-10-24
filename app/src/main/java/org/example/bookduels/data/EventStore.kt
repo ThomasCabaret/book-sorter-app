@@ -343,6 +343,36 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
         } finally { db.endTransaction() }
     }
 
+    /** Corrects reviewed catalog metadata without changing IDs, visibility, or events. */
+    fun applyCatalogMetadataCurationV2() {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            val alreadyApplied = db.rawQuery(
+                "SELECT 1 FROM app_metadata WHERE key=?", arrayOf(CATALOG_METADATA_CURATION_V2)
+            ).use { it.moveToFirst() }
+            if (alreadyApplied) {
+                db.setTransactionSuccessful()
+                return
+            }
+            val updated = db.update("books", ContentValues().apply {
+                put("title", "La Fille-flûte et autres fragments de futurs brisés")
+            }, "book_id=? AND source<>?", arrayOf("isbn:9782846267984", "V1_PLACEHOLDER"))
+            if (updated == 0) {
+                val isPlaceholder = db.rawQuery(
+                    "SELECT 1 FROM books WHERE book_id=? AND source=?",
+                    arrayOf("isbn:9782846267984", "V1_PLACEHOLDER"),
+                ).use { it.moveToFirst() }
+                require(isPlaceholder) { "Missing Bacigalupi collection for metadata correction" }
+            }
+            db.insertOrThrow("app_metadata", null, ContentValues().apply {
+                put("key", CATALOG_METADATA_CURATION_V2)
+                put("value", System.currentTimeMillis().toString())
+            })
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+    }
+
     /** Hiding a book does not modify any historical event. */
     fun setEnabled(id: String, enabled: Boolean) {
         val updated = writableDatabase.update("books", ContentValues().apply { put("enabled", if (enabled) 1 else 0) },
@@ -352,6 +382,7 @@ class EventStore(context: Context) : SQLiteOpenHelper(context, "bookduels.db", n
 
     private companion object {
         const val SAGA_CURATION_V1 = "saga_catalog_curation_v1"
+        const val CATALOG_METADATA_CURATION_V2 = "catalog_metadata_curation_v2"
     }
 
     fun events(): List<VoteEvent> = readEvents(readableDatabase)

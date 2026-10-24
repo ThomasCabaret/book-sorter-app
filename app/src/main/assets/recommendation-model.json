@@ -7,11 +7,11 @@
     "license": "CC BY-SA 4.0"
   },
   "modelSha256": "74fa5551952f898331e46cc34e5ba5cb50e0b2eaf5f57267a5cbc153f02f0fd4",
-  "assetSha256": "88dfdd76157fa09c5782281840993807c93d6eca70f41773755c71174a8cff19",
+  "assetSha256": "1853b811b4ea5dfe30d8c1a9ffccc5d36c5413b6b975e9d5cb1d06f7125e0387",
   "assetBytes": 1933076,
   "items": 10000,
   "dimensions": 48,
-  "candidateItems": 2296,
+  "candidateItems": 2294,
   "catalogAliases": 74,
   "candidatePolicy": {
     "positiveTags": [
@@ -76,8 +76,10 @@
     "knownCatalogWorkExclusions": [
       33559,
       40575,
+      216334,
       747250,
       1742269,
+      4873881,
       6163095,
       17342821
     ]
@@ -85,6 +87,6 @@
   "phoneInference": {
     "personalization": "one full-batch AdamW step from zero",
     "personalizationLearningRate": 0.01,
-    "popularityBiasWeight": 0.1
+    "populationPriorWeight": 0.1
   }
 }

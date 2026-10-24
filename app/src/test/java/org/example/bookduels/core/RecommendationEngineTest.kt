@@ -45,8 +45,8 @@ class RecommendationEngineTest {
 
         assertEquals(2, report.matchedCatalogBooks)
         assertEquals(1, report.mappedActiveVotes)
-        assertEquals(listOf(3, 4), report.books.map { it.datasetBookId })
-        assertTrue(report.books[0].score > report.books[1].score)
+        assertEquals(listOf(3), report.books.map { it.datasetBookId })
+        assertEquals(1, report.eligibleCandidates)
     }
 
     @Test
@@ -88,7 +88,7 @@ class RecommendationEngineTest {
         assertTrue(asset.length() < 3_000_000)
         val model = asset.inputStream().use(RecommendationModel::read)
         assertEquals(10_000, model.itemCount)
-        assertEquals(2_296, model.candidateCount)
+        assertEquals(2_294, model.candidateCount)
         assertEquals(74, model.aliasCount)
     }
 }

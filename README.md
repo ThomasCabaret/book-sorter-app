@@ -1,14 +1,14 @@
-# BookDuels v0.7 — Offline-first Android app (Pixel 7a)
+# BookDuels v0.7.1 — Offline-first Android app (Pixel 7a)
 
 An Android app for a single reader. Compare any two read books with an
 independent horizontal swipe on either the upper or lower book card. The card
 swiped left **or** right is the preferred book. A separate Joker action means
 "decline to choose" and does not introduce a tie or a preference vote.
 
-This is a **source project**, not a release APK. The v0.7 JVM tests, Python
+This is a **source project**, not a release APK. The v0.7.1 JVM tests, Python
 exchange/recommendation tests and debug APK build pass with Android SDK/API 37.
 The v0.6 consistency-check upgrade was installed and exercised on the Pixel 7a
-without changing any of its 467 existing event rows. The v0.7 on-device
+without changing any of its 467 existing event rows. The v0.7.1 on-device
 recommendation screen still needs its final install/performance smoke test.
 
 ## Features
@@ -45,8 +45,10 @@ recommendation screen still needs its final install/performance smoke test.
   contains a 1.93 MB frozen Goodbooks-derived item model, never the six million
   raw ratings or BookDuels votes. Candidate filtering excludes obvious
   comics/omnibus noise, known split-edition works and unfamiliar late-series
-  volumes. Scores remain statistical ranking signals, not calibrated
-  probabilities.
+  volumes. A collective prior can order personally plausible candidates but
+  cannot rescue one with below-average personal affinity. Scores remain statistical ranking signals, not calibrated
+  probabilities. External rating counts are not used in scoring or tie-breaking;
+  the source corpus itself nevertheless remains popularity-selected.
 - The desktop reference recommender remains available for parity checks and
   reproducible evaluation. It never converts external ratings into duels.
 - SQLite **append-only** vote/joker/invalidation/reinstatement event log.
@@ -155,6 +157,10 @@ the seed catalog; the startup merge **never replaces existing books, resets
 visibility choices, or modifies event rows**. A separate one-time v0.5 curation
 implements the requested saga corrections without changing any event. Re-importing
 the exact original CSV reports 0 new books (as expected).
+
+The v0.7.1 metadata curation corrects ISBN `9782846267984` to *La
+Fille-flûte et autres fragments de futurs brisés*. It changes only that title;
+the stable book ID, visibility and complete event history remain untouched.
 
 ## Android UI
 

@@ -1,6 +1,6 @@
 # Offline recommendation prototype
 
-BookDuels v0.7 includes a desktop interpretable-neighbor prototype, a heavier
+BookDuels v0.7.1 includes a desktop interpretable-neighbor prototype, a heavier
 pairwise latent-model trainer and compact on-device inference. Raw third-party
 ratings are never copied into the SQLite event log, a portable BookDuels export,
 the APK, or Git. The APK contains only an attributed item-model derivative.
@@ -62,8 +62,8 @@ This is deliberately interpretable and small. Goodreads ratings are coarse,
 selection-biased observations, so the output is a recommendation heuristic,
 not a probability that the reader will like a book.
 
-The real distribution shows that 25 is only a quality guard, not a useful size
-reduction for this already-filtered dataset: it retains 53,390 readers and
+The real distribution shows that 25 is only a quality guard, not a proximity
+test or a useful size reduction for this already-filtered dataset: it retains 53,390 readers and
 5,975,712 ratings. A threshold of 100 retains 37,084 readers and 4,615,637
 ratings; 150 collapses to 4,235 readers and 688,371 ratings. The training stage
 must therefore select the threshold by held-out ranking quality, not by an
@@ -206,7 +206,7 @@ validated improvement and is not shipped on Android.
 encodes all 10,000 item vectors as binary float16 values, attaches conservative
 local-work aliases and marks a filtered candidate set. The resulting
 `app/src/main/assets/recommendation-model.bin` is 1,933,076 bytes and contains
-2,296 eligible genre candidates before catalog and series filtering. It does
+2,294 eligible genre candidates before catalog and series filtering. It does
 not contain personal data or raw rating rows. Its manifest and CC BY-SA notice
 are bundled beside it.
 
@@ -219,7 +219,10 @@ For each event-log revision, Android:
    population bias;
 5. excludes catalog works, known unsafe split/omnibus identities, obvious
    non-novel/omnibus candidates and late volumes of a series not represented in
-   the catalog.
+   the catalog;
+6. keeps only candidates whose personal component is at least the mean personal
+   component of that filtered pool. The population prior may order plausible
+   matches but cannot rescue a below-average personal match.
 
 The 0.1 population weight was selected on 5,339 held-out readers and 330,882
 query pairs. The exact phone-style calculation reaches 65.915% pairwise
@@ -227,6 +230,27 @@ accuracy and 0.6718 log-loss. Full population-bias weight reaches 63.979%
 accuracy in the same one-step evaluation; personal-only reaches 57.693%.
 These are ranking diagnostics, not probabilities of liking a book. The
 reproducible report is `docs/benchmarks/goodbooks-android-48d.json`.
+
+This weight is a validated regularization hyperparameter, not a raw popularity
+multiplier: rating count is absent from both the score and tie-breaking. The
+learned item intercept represents population-wide pairwise preference; in this
+artifact its Pearson correlation with `log(1 + rating_count)` is only 0.044.
+Each eligible training reader contributes the same bounded number of sampled
+pairs per epoch, so prolific readers do not receive extra optimization weight.
+Still, the source corpus itself is the 10,000 most-rated Goodbooks works and is
+therefore selection-biased. Without exposure logs, the system cannot claim a
+causal correction of popularity bias. A zero-intercept ablation was tested: it
+dropped held-out accuracy to 57.7% and produced visibly noisy niche/YA results,
+so it is not shipped as a supposedly purer recommendation method. The
+above-average personal-affinity gate separately prevents the collective prior
+from promoting a candidate whose individual signal points the other way.
+
+The latent model does not require a reader to have rated the exact same books
+as the local catalog: shared readers learned the item feature space during the
+one-time desktop training. On the phone, however, the personal vector is fitted
+only from the owner's mapped active duels. This is collaborative latent-factor
+inference, not literal nearest-neighbor voting; the latter remains a diagnostic
+because it has not demonstrated an improvement on the held-out split.
 
 ```powershell
 python scripts\evaluate_android_recommender.py `
