@@ -1,6 +1,6 @@
 # Offline recommendation prototype
 
-BookDuels v0.7.2 includes a desktop interpretable-neighbor prototype, a heavier
+BookDuels v0.7.3 includes a desktop interpretable-neighbor prototype, a heavier
 pairwise latent-model trainer and compact on-device inference. Raw third-party
 ratings are never copied into the SQLite event log, a portable BookDuels export,
 the APK, or Git. The APK contains only an attributed item-model derivative.
@@ -205,7 +205,7 @@ validated improvement and is not shipped on Android.
 `scripts/build_android_recommender.py` removes the unused reader factors,
 encodes all 10,000 item vectors as binary float16 values, attaches conservative
 local-work aliases and marks a filtered candidate set. The resulting
-`app/src/main/assets/recommendation-model.bin` is 1,933,076 bytes and contains
+`app/src/main/assets/recommendation-model.bin` is 1,999,621 bytes and contains
 2,294 eligible genre candidates before catalog and series filtering. It does
 not contain personal data or raw rating rows. Its manifest and CC BY-SA notice
 are bundled beside it.
@@ -224,9 +224,17 @@ For each event-log revision, Android:
    component of that filtered pool. The population prior may order plausible
    matches but cannot rescue a below-average personal match.
 
-The Android screen returns up to 100 ranked works and links each result to its
-stable Goodreads work page. `scripts/recommend_android_asset.py` uses the same
-default limit and emits the same URL as `referenceUrl` for desktop inspection.
+The Android screen returns up to 100 ranked works and links each result to a
+Goodreads book page. The compact model stores Goodbooks' explicit
+`best_book_id`; it does not mistake the abstract `work_id` for a public book
+page ID. `scripts/recommend_android_asset.py` uses the same default limit and
+emits the same URL as `referenceUrl` for desktop inspection.
+
+Goodbooks' CSV serializes some ISBN-13 values as rounded scientific notation.
+The asset builder now prefers the row's checksum-valid ISBN-10 and converts it
+exactly; a truncated scientific value is discarded rather than "repaired" into
+a different checksum-valid edition identifier. Goodreads links do not depend
+on ISBN and continue to use `best_book_id`.
 
 The 0.1 population weight was selected on 5,339 held-out readers and 330,882
 query pairs. The exact phone-style calculation reaches 65.915% pairwise
@@ -304,7 +312,7 @@ validated score is the fixed-item-factor prediction from the personal vector.
 
 The 69 MB raw ratings file is acceptable on a desktop but is not needed on the
 phone. The desktop artifact is about 5.4 MB; the packaged item-only derivative
-is 1.93 MB. It is read-only app data, so upgrading the model cannot alter the
+is 2.00 MB. It is read-only app data, so upgrading the model cannot alter the
 SQLite catalog or append-only event history.
 
 Run its synthetic tests with:

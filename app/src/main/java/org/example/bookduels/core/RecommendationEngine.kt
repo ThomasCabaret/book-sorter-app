@@ -11,6 +11,7 @@ import kotlin.math.exp
 data class RecommendedBook(
     val datasetBookId: Int,
     val workId: Long,
+    val goodreadsBookId: Long,
     val title: String,
     val authors: String,
     val isbn13: String?,
@@ -20,7 +21,7 @@ data class RecommendedBook(
     val score: Float,
 ) {
     val referenceUrl: String
-        get() = "https://www.goodreads.com/work/show/$workId"
+        get() = "https://www.goodreads.com/book/show/$goodreadsBookId"
 }
 
 data class RecommendationReport(
@@ -33,6 +34,7 @@ data class RecommendationReport(
 internal data class RecommendationItem(
     val datasetBookId: Int,
     val workId: Long,
+    val goodreadsBookId: Long,
     val candidate: Boolean,
     val bias: Float,
     val datasetAverageRating: Float,
@@ -145,6 +147,7 @@ internal class RecommendationModel(
             RecommendedBook(
                 datasetBookId = item.datasetBookId,
                 workId = item.workId,
+                goodreadsBookId = item.goodreadsBookId,
                 title = item.title,
                 authors = item.authors,
                 isbn13 = item.isbn13,
@@ -177,7 +180,7 @@ internal class RecommendationModel(
         fun read(source: InputStream): RecommendationModel {
             val input = DataInputStream(BufferedInputStream(source))
             val magic = ByteArray(8).also(input::readFully).decodeToString()
-            require(magic == "BDREC001") { "Unsupported recommendation model" }
+            require(magic == "BDREC002") { "Unsupported recommendation model" }
             val itemCount = input.readInt()
             val dimensions = input.readInt()
             val aliasCount = input.readInt()
@@ -196,6 +199,7 @@ internal class RecommendationModel(
             repeat(itemCount) { expectedIndex ->
                 val datasetBookId = input.readInt()
                 val workId = input.readLong()
+                val goodreadsBookId = input.readLong()
                 val flags = input.readInt()
                 val bias = input.readFloat()
                 val averageRating = input.readFloat()
@@ -205,12 +209,13 @@ internal class RecommendationModel(
                 val authors = readText(input)
                 val factors = FloatArray(dimensions) { halfToFloat(input.readUnsignedShort()) }
                 require(
-                    datasetBookId == expectedIndex + 1 && workId >= 0 && flags and 1.inv() == 0 &&
+                    datasetBookId == expectedIndex + 1 && workId >= 0 && goodreadsBookId > 0 &&
+                        flags and 1.inv() == 0 &&
                         bias.isFinite() && averageRating.isFinite() && ratingCount >= 0 &&
                         title.isNotBlank() && authors.isNotBlank() && factors.all(Float::isFinite)
                 ) { "Invalid recommendation item" }
                 items += RecommendationItem(
-                    datasetBookId, workId, flags and 1 != 0, bias, averageRating,
+                    datasetBookId, workId, goodreadsBookId, flags and 1 != 0, bias, averageRating,
                     ratingCount, isbn, title, authors, factors,
                 )
             }

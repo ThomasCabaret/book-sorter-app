@@ -24,17 +24,19 @@ def read_text(source) -> str:
 
 def read_asset(path: pathlib.Path) -> dict:
     with path.open("rb") as source:
-        if source.read(8) != b"BDREC001":
+        if source.read(8) != b"BDREC002":
             raise ValueError("Unsupported recommendation asset")
         item_count, dimensions, alias_count = struct.unpack(">III", source.read(12))
         aliases = {read_text(source): struct.unpack(">I", source.read(4))[0] for _ in range(alias_count)}
         factors = np.empty((item_count, dimensions), dtype=np.float32)
         items = []
         for expected in range(1, item_count + 1):
-            payload = source.read(28)
-            if len(payload) != 28:
+            payload = source.read(36)
+            if len(payload) != 36:
                 raise ValueError("Truncated recommendation item")
-            book_id, work_id, flags, bias, average, rating_count = struct.unpack(">IqIffi", payload)
+            book_id, work_id, goodreads_book_id, flags, bias, average, rating_count = struct.unpack(
+                ">IqqIffi", payload
+            )
             if book_id != expected:
                 raise ValueError("Non-contiguous recommendation item IDs")
             isbn, title, authors = read_text(source), read_text(source), read_text(source)
@@ -43,7 +45,8 @@ def read_asset(path: pathlib.Path) -> dict:
                 raise ValueError("Truncated recommendation factors")
             factors[expected - 1] = np.frombuffer(factor_bytes, dtype=">f2").astype(np.float32)
             items.append({
-                "bookId": book_id, "workId": work_id, "candidate": bool(flags & 1),
+                "bookId": book_id, "workId": work_id,
+                "goodreadsBookId": goodreads_book_id, "candidate": bool(flags & 1),
                 "bias": bias, "averageRating": average, "ratingCount": rating_count,
                 "isbn13": isbn or None, "title": title, "authors": authors,
             })
@@ -138,7 +141,7 @@ def build_report(
             **item,
             "score": score,
             "personalScore": personal_score,
-            "referenceUrl": f"https://www.goodreads.com/work/show/{item['workId']}",
+            "referenceUrl": f"https://www.goodreads.com/book/show/{item['goodreadsBookId']}",
         })
     recommendations.sort(key=lambda item: (-item["score"], item["bookId"]))
     return {

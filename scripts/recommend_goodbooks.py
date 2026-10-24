@@ -52,14 +52,36 @@ def valid_isbn13(value: str) -> bool:
     ) % 10 == 0
 
 
+def isbn10_to_isbn13(raw: str | None) -> str | None:
+    """Convert a checksum-valid ISBN-10 without relying on rounded CSV floats."""
+    text = "".join(character for character in (raw or "") if character.isdigit() or character in "Xx")
+    if len(text) == 9 and text.isdigit():
+        text = "0" + text
+    if len(text) != 10 or not text[:9].isdigit():
+        return None
+    check = 10 if text[9] in "Xx" else int(text[9]) if text[9].isdigit() else -1
+    values = [int(character) for character in text[:9]] + [check]
+    if check < 0 or sum((10 - index) * value for index, value in enumerate(values)) % 11 != 0:
+        return None
+    prefix = "978" + text[:9]
+    checksum = (-sum(
+        int(digit) * (1 if index % 2 == 0 else 3)
+        for index, digit in enumerate(prefix)
+    )) % 10
+    return prefix + str(checksum)
+
+
 def normalize_isbn13(raw: str | None) -> str | None:
     """Normalize plain or spreadsheet-style scientific-notation ISBN-13."""
     text = (raw or "").strip()
     if not text:
         return None
-    digits = "".join(character for character in text if character.isdigit())
-    if valid_isbn13(digits):
-        return digits
+    # Do not concatenate exponent digits into the mantissa. Some scientific
+    # strings accidentally form a different checksum-valid 13-digit number.
+    if "e" not in text.casefold():
+        digits = "".join(character for character in text if character.isdigit())
+        if valid_isbn13(digits):
+            return digits
     try:
         number = Decimal(text)
         integral = number.to_integral_value()
@@ -68,20 +90,7 @@ def normalize_isbn13(raw: str | None) -> str | None:
         candidate = format(integral, "f")
     except InvalidOperation:
         return None
-    if valid_isbn13(candidate):
-        return candidate
-    # goodbooks-10k serialized many ISBN-13 values through a floating-point
-    # scientific notation with only the first twelve significant digits. The
-    # lost final digit is the ISBN checksum and is therefore exactly recoverable.
-    if len(candidate) == 13 and candidate.isdigit():
-        prefix = candidate[:12]
-        checksum = (-sum(
-            int(digit) * (1 if index % 2 == 0 else 3)
-            for index, digit in enumerate(prefix)
-        )) % 10
-        recovered = prefix + str(checksum)
-        return recovered if valid_isbn13(recovered) else None
-    return None
+    return candidate if valid_isbn13(candidate) else None
 
 
 def normalize_text(value: str) -> str:
@@ -153,7 +162,7 @@ def load_books(path: pathlib.Path) -> tuple[
             raise ValueError(f"books.csv missing columns: {sorted(required - set(reader.fieldnames or []))}")
         for row in reader:
             book_id = int(row["book_id"])
-            isbn13 = normalize_isbn13(row.get("isbn13"))
+            isbn13 = isbn10_to_isbn13(row.get("isbn")) or normalize_isbn13(row.get("isbn13"))
             meta = BookMeta(
                 book_id=book_id,
                 goodreads_book_id=int(row["goodreads_book_id"]),

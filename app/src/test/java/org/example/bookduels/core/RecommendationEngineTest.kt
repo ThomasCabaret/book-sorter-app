@@ -14,6 +14,7 @@ class RecommendationEngineTest {
     ) = RecommendationItem(
         datasetBookId = id,
         workId = workId,
+        goodreadsBookId = id.toLong(),
         candidate = candidate,
         bias = 0f,
         datasetAverageRating = 4f,
@@ -47,7 +48,7 @@ class RecommendationEngineTest {
         assertEquals(1, report.mappedActiveVotes)
         assertEquals(listOf(3), report.books.map { it.datasetBookId })
         assertEquals(1, report.eligibleCandidates)
-        assertEquals("https://www.goodreads.com/work/show/3", report.books.single().referenceUrl)
+        assertEquals("https://www.goodreads.com/book/show/3", report.books.single().referenceUrl)
     }
 
     @Test

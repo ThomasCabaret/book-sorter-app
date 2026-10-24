@@ -21,6 +21,7 @@ class AndroidRecommendationAssetTest(unittest.TestCase):
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         self.assertEqual(hashlib.sha256(ASSET.read_bytes()).hexdigest(), manifest["assetSha256"])
         asset = read_asset(ASSET)
+        self.assertEqual("bookduels.android-recommender.v2", manifest["format"])
         self.assertEqual(manifest["items"], len(asset["items"]))
         self.assertEqual(manifest["dimensions"], asset["dimensions"])
         self.assertEqual(manifest["catalogAliases"], len(asset["aliases"]))
@@ -28,6 +29,8 @@ class AndroidRecommendationAssetTest(unittest.TestCase):
             manifest["candidateItems"], sum(item["candidate"] for item in asset["items"])
         )
         self.assertTrue(np.isfinite(asset["factors"]).all())
+        self.assertTrue(all(item["goodreadsBookId"] > 0 for item in asset["items"]))
+        self.assertEqual(52397, asset["items"][4046]["goodreadsBookId"])
         by_work = {item["workId"]: item for item in asset["items"]}
         self.assertFalse(by_work[216334]["candidate"])
         self.assertFalse(by_work[4873881]["candidate"])

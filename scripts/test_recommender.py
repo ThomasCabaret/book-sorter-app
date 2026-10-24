@@ -9,6 +9,7 @@ import unittest
 from recommend_goodbooks import (
     collect_recommendations,
     find_neighbors,
+    isbn10_to_isbn13,
     load_books,
     map_catalog,
     normalize_isbn13,
@@ -25,7 +26,11 @@ def isbn13(prefix: str) -> str:
 class RecommenderTest(unittest.TestCase):
     def test_scientific_notation_isbn_is_normalized(self):
         self.assertEqual("9780439023481", normalize_isbn13("9.780439023481e+12"))
-        self.assertEqual("9780439023481", normalize_isbn13("9.78043902348e+12"))
+        self.assertIsNone(normalize_isbn13("9.78043902348e+12"))
+        self.assertIsNone(normalize_isbn13("9.7804466755e+12"))
+        self.assertEqual("9780142437889", isbn10_to_isbn13("0142437883"))
+        self.assertEqual("9780142437889", isbn10_to_isbn13("142437883"))
+        self.assertEqual("9780446675505", isbn10_to_isbn13("0446675504"))
         self.assertIsNone(normalize_isbn13("not-an-isbn"))
 
     def test_pairwise_order_similarity_rewards_same_order(self):

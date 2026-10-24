@@ -25,8 +25,8 @@ from recommend_goodbooks import (
 from recommend_latent import load_model
 
 
-MAGIC = b"BDREC001"
-FORMAT = "bookduels.android-recommender.v1"
+MAGIC = b"BDREC002"
+FORMAT = "bookduels.android-recommender.v2"
 EXCLUDED_TAGS = {
     "art", "biography", "childrens", "childrens-books", "children",
     "comic", "comics", "graphic-novel", "graphic-novels", "history",
@@ -142,9 +142,10 @@ def build(args: argparse.Namespace) -> dict:
         for item_index in range(item_count):
             meta = books[item_index + 1]
             output.write(struct.pack(
-                ">IqIffi",
+                ">IqqIffi",
                 item_index + 1,
                 int(meta.work_id or 0),
+                int(meta.best_book_id),
                 int(candidate[item_index]),
                 float(model["item_bias"][item_index]),
                 float(meta.average_rating),

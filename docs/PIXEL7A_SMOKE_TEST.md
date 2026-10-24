@@ -1,6 +1,6 @@
 # Pixel 7a smoke tests — 2026-10-20 and 2026-10-24
 
-> The latest completed observations concern v0.7.2. Older interaction notes are
+> The latest completed observations concern v0.7.3. Older interaction notes are
 > retained below as an audit trail; they do not describe the current UI alone.
 
 ## Environment
@@ -13,6 +13,25 @@
 The device serial and the user's unrelated files are deliberately not recorded.
 
 ## Passed
+
+### Version 0.7.3 Goodreads-link correction — 2026-10-24
+
+- `adb install -r` upgraded the existing installation to v0.7.3/code 10 without
+  uninstalling or clearing application data.
+- The compact model format is now `BDREC002`. Every item carries Goodbooks'
+  explicit `best_book_id`; links use `/book/show/<best_book_id>` and never the
+  abstract Goodreads work ID.
+- ISBN metadata is rebuilt from checksum-valid ISBN-10 values when available;
+  rounded scientific-notation ISBN-13 values are no longer turned into a
+  different, accidentally checksum-valid identifier.
+- The first four recommendation buttons dispatched book IDs `52397`, `49011`,
+  `5787` and `48464`. The installed Goodreads app rendered, respectively,
+  *Parable of the Sower*, *The Bloody Chamber and Other Stories*, *The Aleph
+  and Other Stories* and *A Good Man Is Hard to Find and Other Stories*, with
+  the expected authors.
+- Complete pre/post SQLite snapshots both contained 155 books and the same 467
+  events through sequence 467. Their canonical event SHA-256 remained
+  `cfcf135e7d6afe461ebd987b43eb61b649bc36fe556e3372d03746738ffaaaa4`.
 
 ### Version 0.7.2 recommendation pass — 2026-10-24
 
@@ -34,6 +53,9 @@ The device serial and the user's unrelated files are deliberately not recorded.
 - Recommendation cards expose **Voir la fiche Goodreads**. Tapping the first
   result dispatched the exact work URL
   `https://www.goodreads.com/work/show/59258` to the installed Goodreads app.
+  This verified intent dispatch only. User testing then established that the
+  `/work/show/` route was not a valid public book page; v0.7.3 supersedes it
+  with the dataset's explicit Goodreads `best_book_id`.
 - The app was finally relaunched on the Duels screen, ready for normal use.
 - A complete read-only SQLite copy included the main database, WAL and SHM
   siblings. It confirmed that the one-time metadata curation stored

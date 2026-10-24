@@ -1,16 +1,16 @@
-# BookDuels v0.7.2 — Offline-first Android app (Pixel 7a)
+# BookDuels v0.7.3 — Offline-first Android app (Pixel 7a)
 
 An Android app for a single reader. Compare any two read books with an
 independent horizontal swipe on either the upper or lower book card. The card
 swiped left **or** right is the preferred book. A separate Joker action means
 "decline to choose" and does not introduce a tie or a preference vote.
 
-This is a **source project**, not a release APK. The v0.7.2 JVM tests, Python
+This is a **source project**, not a release APK. The v0.7.3 JVM tests, Python
 exchange/recommendation tests and debug APK build pass with Android SDK/API 37.
-The v0.7.2 upgrade and recommendation screen were installed and exercised on
-the Pixel 7a without changing any of its 467 existing event rows. The local
-model produced 100 results from 104 mapped active votes; its direct Goodreads
-work link opened successfully.
+The v0.7.3 upgrade and corrected recommendation links were installed and
+exercised on the Pixel 7a without changing any of its 467 existing event rows.
+The local model produced 100 results from 104 mapped active votes; the first
+four Goodreads pages were verified by their rendered titles and authors.
 
 ## Features
 
@@ -43,7 +43,7 @@ work link opened successfully.
   **not calibrated confidence probabilities or psychological measurements**.
 - A fully local recommendation screen fits a 48-dimensional personal vector
   from active mapped votes and rescoring after every journal revision. The APK
-  contains a 1.93 MB frozen Goodbooks-derived item model, never the six million
+  contains a 2.00 MB frozen Goodbooks-derived item model, never the six million
   raw ratings or BookDuels votes. Candidate filtering excludes obvious
   comics/omnibus noise, known split-edition works and unfamiliar late-series
   volumes. A collective prior can order personally plausible candidates but
@@ -51,7 +51,9 @@ work link opened successfully.
   probabilities. External rating counts are not used in scoring or tie-breaking;
   the source corpus itself nevertheless remains popularity-selected.
 - The phone displays the first 100 recommendations. Every result has a direct
-  Goodreads work link; the desktop parity JSON exposes the same URL.
+  Goodreads book-page link built from Goodbooks' explicit `best_book_id`; the
+  desktop parity JSON exposes the same URL. Work IDs are never substituted for
+  edition/page IDs.
 - The desktop reference recommender remains available for parity checks and
   reproducible evaluation. It never converts external ratings into duels.
 - SQLite **append-only** vote/joker/invalidation/reinstatement event log.
@@ -152,7 +154,7 @@ build as release-ready, complete the remaining interaction checks:
 9. The **À lire** screen loads without network access, reports mapped-vote
    coverage, agrees with `scripts/recommend_android_asset.py`, and recomputes
    after a new vote without adding any external event to SQLite. Loading and
-   link opening passed on v0.7.2; the recomputation-after-vote assertion still
+   link content passed on v0.7.3; the recomputation-after-vote assertion still
    belongs in the future automated interaction suite.
 
 On first launch the SQLite catalog gets seeded with 155 retained records: the
