@@ -47,6 +47,7 @@ class RecommendationEngineTest {
         assertEquals(1, report.mappedActiveVotes)
         assertEquals(listOf(3), report.books.map { it.datasetBookId })
         assertEquals(1, report.eligibleCandidates)
+        assertEquals("https://www.goodreads.com/work/show/3", report.books.single().referenceUrl)
     }
 
     @Test
@@ -70,6 +71,23 @@ class RecommendationEngineTest {
 
         assertEquals(0, report.mappedActiveVotes)
         assertTrue(report.books.isEmpty())
+    }
+
+    @Test
+    fun defaultRecommendationLimitIsOneHundred() {
+        val candidates = (3..122).map { id -> item(id, 0.5f, candidate = true) }
+        val model = RecommendationModel(
+            dimensions = 1,
+            items = listOf(item(1, 1f), item(2, -1f)) + candidates,
+            localAliases = mapOf("a" to 0, "b" to 1),
+        )
+        val catalog = listOf(Book("a", "A", "Author A"), Book("b", "B", "Author B"))
+        val event = VoteEvent(1, "v1", 1, EventKind.VOTE, "a", "b", "a")
+
+        val report = model.recommend(catalog, listOf(event))
+
+        assertEquals(100, report.books.size)
+        assertEquals(120, report.eligibleCandidates)
     }
 
     @Test

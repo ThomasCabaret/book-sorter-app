@@ -1,8 +1,7 @@
-# Pixel 7a smoke test — 2026-10-20
+# Pixel 7a smoke tests — 2026-10-20 and 2026-10-24
 
-> The completed observations below concern v0.4. Version 0.5 is locally built
-> and tested, but its card-level set-aside control, restored-book list, and
-> v2-to-v3 in-place migration remain to be checked on the connected phone.
+> The latest completed observations concern v0.7.2. Older interaction notes are
+> retained below as an audit trail; they do not describe the current UI alone.
 
 ## Environment
 
@@ -14,6 +13,32 @@
 The device serial and the user's unrelated files are deliberately not recorded.
 
 ## Passed
+
+### Version 0.7.2 recommendation pass — 2026-10-24
+
+- The connected Pixel reported the installed predecessor as v0.6.0/code 6.
+  `adb install -r` upgraded it to v0.7.2/code 9 without uninstalling or clearing
+  application data.
+- Read-only SQLite snapshots immediately before installation, after installation
+  and after the UI smoke test all passed `PRAGMA quick_check`. Each contained
+  155 books and exactly the same 467 event rows: 447 votes, 10 Jokers and 10
+  invalidations, through sequence 467. Their canonical event SHA-256 was
+  `cfcf135e7d6afe461ebd987b43eb61b649bc36fe556e3372d03746738ffaaaa4`.
+- The cold app launch completed in 687 ms; the final cold relaunch completed in
+  661 ms. No fatal exception or application crash appeared in logcat.
+- **À lire** rendered 104 mapped active votes, 74 linked catalog books and 575
+  eligible candidates. Its leading results agreed with the exact desktop
+  reference. Automated scrolling reached **100. In the Penal Colony**, proving
+  that the phone rendered the new 100-result default rather than only the
+  initially visible cards.
+- Recommendation cards expose **Voir la fiche Goodreads**. Tapping the first
+  result dispatched the exact work URL
+  `https://www.goodreads.com/work/show/59258` to the installed Goodreads app.
+- The app was finally relaunched on the Duels screen, ready for normal use.
+- A complete read-only SQLite copy included the main database, WAL and SHM
+  siblings. It confirmed that the one-time metadata curation stored
+  *La Fille-flûte et autres fragments de futurs brisés* while preserving its
+  stable ID, enabled state and the entire event fingerprint.
 
 - ADB authorization and USB transport.
 - Streamed debug installation with `adb install -r`.
@@ -85,5 +110,7 @@ test session before release:
 1. Joker commit semantics and rapid/double input resistance.
 2. Strong-biometric/device-credential fail-closed behavior for reinstatement.
 3. Windows-1252 and UTF-8 Babelio imports through the Android file picker.
-4. SQLite v1-to-v2 migration from a retained v1 fixture.
+4. Instrumented SQLite v1-to-v3 and v2-to-v3 migrations from retained fixtures.
 5. Rotation/process-death behavior and a longer cover-cache exercise.
+6. Automated Compose assertions for swipe semantics and recommendation
+   recomputation immediately after a newly committed vote.

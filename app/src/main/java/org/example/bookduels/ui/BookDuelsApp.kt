@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -127,6 +128,7 @@ internal fun BookDuelsApp(
 @Composable
 private fun RecommendationScreen(state: AppUiState) {
     val report = state.recommendations
+    val uriHandler = LocalUriHandler.current
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -182,7 +184,12 @@ private fun RecommendationScreen(state: AppUiState) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(book.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             Text(book.authors, style = MaterialTheme.typography.bodyMedium)
-                            Text("Référence Goodbooks", style = MaterialTheme.typography.labelSmall)
+                            TextButton(
+                                onClick = { uriHandler.openUri(book.referenceUrl) },
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 0.dp),
+                            ) {
+                                Text("Voir la fiche Goodreads ↗")
+                            }
                         }
                     }
                 }

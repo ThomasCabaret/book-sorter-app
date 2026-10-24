@@ -1,6 +1,6 @@
 # Offline recommendation prototype
 
-BookDuels v0.7.1 includes a desktop interpretable-neighbor prototype, a heavier
+BookDuels v0.7.2 includes a desktop interpretable-neighbor prototype, a heavier
 pairwise latent-model trainer and compact on-device inference. Raw third-party
 ratings are never copied into the SQLite event log, a portable BookDuels export,
 the APK, or Git. The APK contains only an attributed item-model derivative.
@@ -223,6 +223,10 @@ For each event-log revision, Android:
 6. keeps only candidates whose personal component is at least the mean personal
    component of that filtered pool. The population prior may order plausible
    matches but cannot rescue a below-average personal match.
+
+The Android screen returns up to 100 ranked works and links each result to its
+stable Goodreads work page. `scripts/recommend_android_asset.py` uses the same
+default limit and emits the same URL as `referenceUrl` for desktop inspection.
 
 The 0.1 population weight was selected on 5,339 held-out readers and 330,882
 query pairs. The exact phone-style calculation reaches 65.915% pairwise

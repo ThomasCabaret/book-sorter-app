@@ -134,7 +134,12 @@ def build_report(
         if personal_score < mean_personal_score:
             continue
         score = float(population_prior_weight * item["bias"] + personal_score)
-        recommendations.append({**item, "score": score, "personalScore": personal_score})
+        recommendations.append({
+            **item,
+            "score": score,
+            "personalScore": personal_score,
+            "referenceUrl": f"https://www.goodreads.com/work/show/{item['workId']}",
+        })
     recommendations.sort(key=lambda item: (-item["score"], item["bookId"]))
     return {
         "format": "bookduels.android-recommendations.v1",
@@ -151,7 +156,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("bundle", type=pathlib.Path)
     parser.add_argument("--asset", required=True, type=pathlib.Path)
-    parser.add_argument("--limit", type=int, default=40)
+    parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--population-prior-weight", type=float, default=0.1)
     parser.add_argument("--output", required=True, type=pathlib.Path)
     args = parser.parse_args()

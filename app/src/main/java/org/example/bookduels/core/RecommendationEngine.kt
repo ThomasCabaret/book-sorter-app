@@ -18,7 +18,10 @@ data class RecommendedBook(
     val datasetRatingCount: Int,
     /** Latent utility, useful only for sorting this model's candidates. */
     val score: Float,
-)
+) {
+    val referenceUrl: String
+        get() = "https://www.goodreads.com/work/show/$workId"
+}
 
 data class RecommendationReport(
     val books: List<RecommendedBook>,
@@ -60,7 +63,7 @@ internal class RecommendationModel(
     fun recommend(
         catalog: List<Book>,
         activeEvents: List<VoteEvent>,
-        limit: Int = 40,
+        limit: Int = 100,
     ): RecommendationReport {
         require(limit > 0) { "Recommendation limit must be positive" }
         val tentative = catalog.associate { book -> book.id to match(book) }.toMutableMap()
